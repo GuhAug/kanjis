@@ -1,0 +1,154 @@
+// ============================================================
+// data.js — Data helpers built on window.KANJI_DATA
+// ============================================================
+
+var KanjiData = (function () {
+
+  var _data = [];
+  var _byId = {};
+  var _byLevel = {};
+  var _byChapter = {};
+
+  function init(rawData) {
+    _data = rawData || [];
+    _byId = {};
+    _byLevel = { 1: [], 2: [], 3: [], 4: [] };
+    _byChapter = {};
+
+    for (var i = 0; i < _data.length; i++) {
+      var k = _data[i];
+      _byId[k.id] = k;
+      if (!_byLevel[k.level]) _byLevel[k.level] = [];
+      _byLevel[k.level].push(k);
+      var ck = k.level + '-' + k.chapter;
+      if (!_byChapter[ck]) _byChapter[ck] = [];
+      _byChapter[ck].push(k);
+    }
+  }
+
+  function getAll() { return _data; }
+
+  function getById(id) { return _byId[id] || null; }
+
+  function getLevel(level) { return _byLevel[level] || []; }
+
+  function getChapter(level, chapter) {
+    return _byChapter[level + '-' + chapter] || [];
+  }
+
+  function getChaptersForLevel(level) {
+    var chapters = [];
+    var seen = {};
+    var arr = _byLevel[level] || [];
+    for (var i = 0; i < arr.length; i++) {
+      var ch = arr[i].chapter;
+      if (!seen[ch]) {
+        seen[ch] = true;
+        chapters.push(ch);
+      }
+    }
+    chapters.sort(function (a, b) { return a - b; });
+    return chapters;
+  }
+
+  function getLevels() {
+    return [
+      { level: 1, name: 'Iniciante',     count: (_byLevel[1] || []).length },
+      { level: 2, name: 'Elementar',     count: (_byLevel[2] || []).length },
+      { level: 3, name: 'Intermediário', count: (_byLevel[3] || []).length },
+      { level: 4, name: 'Avançado',      count: (_byLevel[4] || []).length },
+    ];
+  }
+
+  function getLevelName(level) {
+    var names = { 1: 'Iniciante', 2: 'Elementar', 3: 'Intermediário', 4: 'Avançado' };
+    return names[level] || 'Nível ' + level;
+  }
+
+  var CHAPTER_JP = ['一', '二', '三', '四', '五', '六', '七', '八'];
+
+  function getChapterLabel(ch) {
+    return CHAPTER_JP[ch - 1] || ch;
+  }
+
+  // Search across kanji char, reading, and PT meaning
+  function search(query) {
+    if (!query) return [];
+    var q = query.trim().toLowerCase();
+    return _data.filter(function (k) {
+      return (
+        (k.k && k.k.includes(query)) ||
+        (k.kun && k.kun.toLowerCase().includes(q)) ||
+        (k.on && k.on.toLowerCase().includes(q)) ||
+        (k.pt && k.pt.toLowerCase().includes(q))
+      );
+    });
+  }
+
+  // Get pool for a quiz/flashcard session
+  // scope: { level: 0|1-4, chapter: 0|1-8 }  — 0 means "all"
+  function getPool(level, chapter) {
+    if (!level || level === 0) return _data.slice();
+    if (!chapter || chapter === 0) return (_byLevel[level] || []).slice();
+    return getChapter(level, chapter).slice();
+  }
+
+  // Fisher-Yates shuffle (in-place, returns arr)
+  function shuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  // Pick n random unique items from arr (returns new array)
+  function pickRandom(arr, n) {
+    var copy = arr.slice();
+    shuffle(copy);
+    return copy.slice(0, Math.min(n, copy.length));
+  }
+
+  // Build distractor pools — same level preferred, fallback to all
+  function getDistractors(correct, field, count) {
+    count = count || 3;
+    var pool = (_byLevel[correct.level] || []).filter(function (k) {
+      return k.id !== correct.id && k[field];
+    });
+    if (pool.length < count) {
+      pool = _data.filter(function (k) {
+        return k.id !== correct.id && k[field];
+      });
+    }
+    shuffle(pool);
+    // Deduplicate by field value
+    var seen = {}; var result = [];
+    seen[correct[field]] = true;
+    for (var i = 0; i < pool.length && result.length < count; i++) {
+      var val = pool[i][field];
+      if (!seen[val]) { seen[val] = true; result.push(val); }
+    }
+    return result;
+  }
+
+  function total() { return _data.length; }
+
+  return {
+    init: init,
+    getAll: getAll,
+    getById: getById,
+    getLevel: getLevel,
+    getChapter: getChapter,
+    getChaptersForLevel: getChaptersForLevel,
+    getLevels: getLevels,
+    getLevelName: getLevelName,
+    getChapterLabel: getChapterLabel,
+    search: search,
+    getPool: getPool,
+    shuffle: shuffle,
+    pickRandom: pickRandom,
+    getDistractors: getDistractors,
+    total: total,
+  };
+
+})();
