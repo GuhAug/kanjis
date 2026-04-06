@@ -856,6 +856,51 @@ select option { background: var(--surface2); }
   color: var(--text-muted);
 }
 
+/* Furigana — ruby tags for unknown kanji in examples */
+.example-jp ruby {
+  ruby-align: center;
+}
+
+.example-jp rt {
+  font-size: 0.58em;
+  color: var(--warning);
+  font-family: 'Noto Sans JP', serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.kanji-unknown {
+  border-bottom: 1px dotted var(--warning);
+  cursor: help;
+}
+
+/* Legend below examples */
+.kanji-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  margin: 4px 0 14px;
+  padding: 0 2px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.legend-dot.known   { background: var(--text-faint); }
+.legend-dot.unknown { background: var(--warning); }
+
 .kanji-actions {
   display: flex;
   gap: 10px;

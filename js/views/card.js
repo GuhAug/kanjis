@@ -4,6 +4,80 @@
 
 var CardView = (function () {
 
+  // ---- Furigana helpers ----
+
+  // Returns true if char is a CJK kanji character
+  function _isKanji(ch) {
+    var code = ch.charCodeAt(0);
+    return (code >= 0x4E00 && code <= 0x9FFF) ||
+           (code >= 0x3400 && code <= 0x4DBF);
+  }
+
+  // Extract simplest possible reading from a reading string like "ひと、ひと（つ）"
+  function _shortestReading(k) {
+    var kun = k.kun ? k.kun.split('、')[0].replace(/[（）()～〜~]/g, '').trim() : null;
+    var on  = k.on  ? k.on.split('、')[0].replace(/[（）()～〜~]/g, '').trim() : null;
+    if (kun && on) return kun.length <= on.length ? kun : on;
+    return kun || on || null;
+  }
+
+  // Build the set of "known" kanji characters for a given kanji card.
+  // Known = same or earlier level, same or earlier chapter.
+  function _buildKnownData(currentKanji) {
+    var known     = {};   // kanji char → true
+    var readingMap = {};  // kanji char → simplest reading (for ALL kanji, for annotation)
+
+    var all = KanjiData.getAll();
+    for (var i = 0; i < all.length; i++) {
+      var k = all[i];
+      if (!k.k) continue;
+
+      // Build reading map for every kanji regardless of known status
+      var reading = _shortestReading(k);
+      if (reading) readingMap[k.k] = reading;
+
+      // A kanji is "known" if it belongs to a chapter ≤ current in level ≤ current
+      var sameOrEarlierLevel   = k.level < currentKanji.level;
+      var sameLevel            = k.level === currentKanji.level;
+      var sameOrEarlierChapter = k.chapter <= currentKanji.chapter;
+
+      if (sameOrEarlierLevel || (sameLevel && sameOrEarlierChapter)) {
+        known[k.k] = true;
+      }
+    }
+
+    return { known: known, readingMap: readingMap };
+  }
+
+  // Annotate a Japanese sentence: wrap unknown kanji in <ruby> tags.
+  // Returns safe HTML string.
+  function _annotateText(text, known, readingMap) {
+    if (!text) return '';
+    var result = '';
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (_isKanji(ch)) {
+        if (known[ch]) {
+          result += ch;                              // Known kanji — show as-is
+        } else {
+          var reading = readingMap[ch];
+          if (reading) {
+            // Unknown but in our dataset → furigana
+            result += '<ruby>' + ch + '<rt>' + reading + '</rt></ruby>';
+          } else {
+            // Unknown and not in dataset → dotted underline tooltip
+            result += '<span class="kanji-unknown" title="Kanji não estudado ainda">' + ch + '</span>';
+          }
+        }
+      } else {
+        result += ch;
+      }
+    }
+    return result;
+  }
+
+  // ---- Render ----
+
   function render(container, params) {
     var id = parseInt(params[1]);
     var k  = KanjiData.getById(id);
@@ -23,6 +97,15 @@ var CardView = (function () {
     var idx  = chapterKanji.findIndex(function (x) { return x.id === k.id; });
     var prev = idx > 0 ? chapterKanji[idx - 1] : null;
     var next = idx < chapterKanji.length - 1 ? chapterKanji[idx + 1] : null;
+
+    // Build known-kanji data for furigana annotation
+    var knownData  = _buildKnownData(k);
+    var known      = knownData.known;
+    var readingMap = knownData.readingMap;
+
+    // Annotate example sentences
+    var kunExHtml = _annotateText(k.kunEx, known, readingMap);
+    var onExHtml  = _annotateText(k.onEx,  known, readingMap);
 
     container.innerHTML =
       '<div class="view-enter kanji-card-page">' +
@@ -45,12 +128,17 @@ var CardView = (function () {
           '<div class="kanji-meaning">' + (k.pt || '') + '</div>' +
           '<div class="readings-row">' +
             (k.kun ? '<div class="reading-box"><div class="rb-label">Leitura Kun</div><div class="rb-value">' + k.kun + '</div></div>' : '') +
-            (k.on  ? '<div class="reading-box"><div class="rb-label">Leitura On</div><div class="rb-value">' + k.on  + '</div></div>' : '') +
+            (k.on  ? '<div class="reading-box"><div class="rb-label">Leitura On</div><div class="rb-value">'  + k.on  + '</div></div>' : '') +
           '</div>' +
         '</div>' +
 
-        (k.kunEx ? _exampleSection('Leitura Kun', k.kunEx, k.kunTr) : '') +
-        (k.onEx  ? _exampleSection('Leitura On',  k.onEx,  k.onTr)  : '') +
+        (k.kunEx ? _exampleSection('Leitura Kun', kunExHtml, k.kunTr) : '') +
+        (k.onEx  ? _exampleSection('Leitura On',  onExHtml,  k.onTr)  : '') +
+
+        '<div class="kanji-legend">' +
+          '<span class="legend-item"><span class="legend-dot known"></span> Kanji estudado</span>' +
+          '<span class="legend-item"><span class="legend-dot unknown"></span> Kanji ainda não estudado (leitura mostrada)</span>' +
+        '</div>' +
 
         '<div class="kanji-actions">' +
           '<button class="btn btn-secondary btn-seen' + (isSeen ? ' active' : '') + '" id="btn-seen">' +
@@ -107,10 +195,10 @@ var CardView = (function () {
     });
   }
 
-  function _exampleSection(label, jp, pt) {
+  function _exampleSection(label, jpHtml, pt) {
     return '<div class="example-section">' +
       '<div class="ex-label">' + label + '</div>' +
-      '<div class="example-jp">' + jp + '</div>' +
+      '<div class="example-jp">' + jpHtml + '</div>' +
       (pt ? '<div class="example-pt">' + pt + '</div>' : '') +
     '</div>';
   }
