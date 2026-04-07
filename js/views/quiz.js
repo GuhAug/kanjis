@@ -266,12 +266,15 @@ var QuizView = (function () {
         '<div class="quiz-feedback" id="qz-feedback">' +
           '<div class="qf-result" id="qf-result"></div>' +
           (q.explanation.example ?
-            '<div class="qf-example">' + q.explanation.example + '</div>' +
+            '<div class="qf-example example-jp">' + KanjiData.annotateEx(q.explanation.example) + '</div>' +
             (q.explanation.translation ? '<div class="qf-trans">' + q.explanation.translation + '</div>' : '')
             : '') +
         '</div>' +
 
         '<button class="btn btn-primary quiz-next-btn hidden" id="qz-next">Próxima →</button>' +
+        '<div style="text-align:center;margin-top:12px">' +
+          '<button class="btn btn-ghost" id="qz-exit" style="font-size:0.85rem;opacity:0.6">✕ Sair do quiz</button>' +
+        '</div>' +
       '</div>';
 
     var optionsEl = container.querySelector('#qz-options');
@@ -317,6 +320,11 @@ var QuizView = (function () {
     nextBtn.addEventListener('click', function () {
       _index++;
       _renderSession(container);
+    });
+
+    container.querySelector('#qz-exit').addEventListener('click', function () {
+      _index = 0; _score = 0; _answers = []; _questions = [];
+      _renderConfig(container);
     });
 
     // Keyboard: 1-4 to select option
@@ -384,7 +392,8 @@ var QuizView = (function () {
     });
 
     container.querySelector('#btn-back').addEventListener('click', function () {
-      KanjiApp.navigate('/quiz');
+      _index = 0; _score = 0; _answers = []; _questions = [];
+      _renderConfig(container);
     });
 
     KanjiApp.setKeyHandler(null);

@@ -13,46 +13,6 @@ var FlashcardView = (function () {
   var _level = 0;
   var _chapter = 0;
 
-  // ---- Furigana helpers ----
-  function _isKanji(ch) {
-    var code = ch.charCodeAt(0);
-    return (code >= 0x4E00 && code <= 0x9FFF) || (code >= 0x3400 && code <= 0x4DBF);
-  }
-
-  var _readingMap = null;
-  function _getReadingMap() {
-    if (_readingMap) return _readingMap;
-    _readingMap = {};
-    var all = KanjiData.getAll();
-    for (var i = 0; i < all.length; i++) {
-      var k = all[i];
-      if (!k.k) continue;
-      var kun = k.kun ? k.kun.split('、')[0].replace(/[（）()～〜~]/g, '').trim() : null;
-      var on  = k.on  ? k.on.split('、')[0].replace(/[（）()～〜~]/g, '').trim()  : null;
-      var reading = (kun && on) ? (kun.length <= on.length ? kun : on) : (kun || on);
-      if (reading) _readingMap[k.k] = reading;
-    }
-    return _readingMap;
-  }
-
-  function _annotateEx(text) {
-    if (!text) return '';
-    var rm = _getReadingMap();
-    var result = '';
-    for (var i = 0; i < text.length; i++) {
-      var ch = text[i];
-      if (_isKanji(ch)) {
-        var reading = rm[ch];
-        result += reading
-          ? '<ruby>' + ch + '<rt>' + reading + '</rt></ruby>'
-          : '<span class="kanji-unknown" title="Kanji não catalogado">' + ch + '</span>';
-      } else {
-        result += ch;
-      }
-    }
-    return result;
-  }
-
   function render(container, params) {
     // params[1] can be "level/chapter" or nothing (config screen)
     if (params[1] && params[1] !== '/session') {
@@ -199,6 +159,9 @@ var FlashcardView = (function () {
         '</div>' +
 
         '<div id="fc-flip-hint" class="fc-keyboard-hint">Clique na carta ou pressione <kbd>Espaço</kbd> para virar</div>' +
+        '<div style="text-align:center;margin-top:12px">' +
+          '<button class="btn btn-ghost" id="btn-exit-fc" style="font-size:0.85rem;opacity:0.6">✕ Sair da sessão</button>' +
+        '</div>' +
       '</div>';
 
     _flipped = false;
@@ -237,6 +200,13 @@ var FlashcardView = (function () {
       _renderCard(container);
     });
 
+    container.querySelector('#btn-exit-fc').addEventListener('click', function () {
+      _deck = [];
+      _position = 0;
+      _results = [];
+      _renderConfig(container);
+    });
+
     KanjiApp.setKeyHandler(function (e) {
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); doFlip(); }
       if (e.key === 'ArrowLeft'  && _flipped) btnWrong.click();
@@ -262,7 +232,7 @@ var FlashcardView = (function () {
         '<div class="fc-big-text" style="font-size:1.4rem">' + (k.pt || '') + '</div>' +
         (k.kun ? '<div class="fc-reading">Kun: ' + k.kun + '</div>' : '') +
         (k.on  ? '<div class="fc-reading">On: '  + k.on  + '</div>' : '') +
-        (k.kunEx ? '<div class="fc-example example-jp">' + _annotateEx(k.kunEx) + '</div>' : '') +
+        (k.kunEx ? '<div class="fc-example example-jp">' + KanjiData.annotateEx(k.kunEx) + '</div>' : '') +
         (k.kunTr ? '<div class="fc-translation">' + k.kunTr + '</div>' : '');
     }
     if (_mode === 'meaning-to-kanji') {
