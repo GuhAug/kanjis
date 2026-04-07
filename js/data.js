@@ -133,6 +133,43 @@ var KanjiData = (function () {
 
   function total() { return _data.length; }
 
+  // ---- Furigana annotation ----
+  var _readingMap = null;
+
+  function _buildReadingMap() {
+    _readingMap = {};
+    for (var i = 0; i < _data.length; i++) {
+      var k = _data[i];
+      if (!k.k) continue;
+      var kun = k.kun ? k.kun.split('、')[0].replace(/[（）()～〜~]/g, '').trim() : null;
+      var on  = k.on  ? k.on.split('、')[0].replace(/[（）()～〜~]/g, '').trim()  : null;
+      var reading = (kun && on) ? (kun.length <= on.length ? kun : on) : (kun || on);
+      if (reading) _readingMap[k.k] = reading;
+    }
+  }
+
+  // Wrap kanji characters in <ruby> tags with furigana readings.
+  // Returns safe HTML string suitable for innerHTML.
+  function annotateEx(text) {
+    if (!text) return '';
+    if (!_readingMap) _buildReadingMap();
+    var result = '';
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      var code = ch.charCodeAt(0);
+      var isKanji = (code >= 0x4E00 && code <= 0x9FFF) || (code >= 0x3400 && code <= 0x4DBF);
+      if (isKanji) {
+        var reading = _readingMap[ch];
+        result += reading
+          ? '<ruby>' + ch + '<rt>' + reading + '</rt></ruby>'
+          : '<span class="kanji-unknown" title="Kanji não catalogado">' + ch + '</span>';
+      } else {
+        result += ch;
+      }
+    }
+    return result;
+  }
+
   return {
     init: init,
     getAll: getAll,
@@ -149,6 +186,7 @@ var KanjiData = (function () {
     pickRandom: pickRandom,
     getDistractors: getDistractors,
     total: total,
+    annotateEx: annotateEx,
   };
 
 })();
