@@ -15,8 +15,10 @@ var CardView = (function () {
 
   // Extract simplest possible reading from a reading string like "ひと、ひと（つ）"
   function _shortestReading(k) {
-    var kun = k.kun ? k.kun.split('、')[0].replace(/[（）()～〜~]/g, '').trim() : null;
-    var on  = k.on  ? k.on.split('、')[0].replace(/[（）()～〜~]/g, '').trim() : null;
+    var kun = k.kun ? k.kun.split('、')[0].replace(/[（(][^）)]*[）)]/g, '').replace(/[～〜~]/g, '').trim() : null;
+    var on  = k.on  ? k.on.split('、')[0].replace(/[（(][^）)]*[）)]/g, '').replace(/[～〜~]/g, '').trim() : null;
+    // Convert katakana on reading to hiragana for display
+    if (on) on = on.replace(/[ァ-ン]/g, function (ch) { return String.fromCharCode(ch.charCodeAt(0) - 0x60); });
     if (kun && on) return kun.length <= on.length ? kun : on;
     return kun || on || null;
   }
