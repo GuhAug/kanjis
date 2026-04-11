@@ -160,7 +160,7 @@ var KanjiData = (function () {
       if (!k.k) continue;
       var kun = k.kun ? _baseReading(k.kun)            : null;
       var on  = k.on  ? _toHiragana(_baseReading(k.on)) : null;
-      var reading = (kun && on) ? (kun.length <= on.length ? kun : on) : (kun || on);
+      var reading = kun || on; // Prefer kun; fall back to on when no kun reading exists
       if (reading) _readingMap[k.k] = reading;
     }
   }
