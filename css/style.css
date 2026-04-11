@@ -227,9 +227,15 @@ select option { background: var(--surface2); }
   bottom: 0; left: 0; right: 0;
   background: var(--surface);
   border-top: 1px solid var(--border);
-  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
-  z-index: 100;
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom, 0px));
+  z-index: 1000;
   justify-content: space-around;
+  /* Force GPU compositing to prevent iOS Safari fixed-element ghosting */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform;
 }
 
 .bottom-nav-item {
@@ -1598,7 +1604,7 @@ select option { background: var(--surface2); }
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .layout { margin-left: 0; }
-  .app-main { padding: 16px 16px 80px; }
+  .app-main { padding: 16px 16px calc(80px + env(safe-area-inset-bottom, 0px)); }
   .bottom-nav { display: flex; }
 
   .theory-layout { flex-direction: column; }
