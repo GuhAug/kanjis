@@ -212,11 +212,12 @@ var QuizView = (function () {
 
   function _renderConfig(container) {
     var levels = KanjiData.getLevels();
+    var selectedLevels   = [];
+    var selectedChapters = [];
 
-    var levelOpts = '<option value="0">Todos os níveis</option>' +
-      levels.map(function (lv) {
-        return '<option value="' + lv.level + '">' + lv.name + '</option>';
-      }).join('');
+    var levelChips = levels.map(function (lv) {
+      return '<div class="filter-chip" data-level="' + lv.level + '">' + lv.name + '</div>';
+    }).join('');
 
     var countOpts = [5, 10, 20].map(function (n) {
       return '<option value="' + n + '" ' + (n === 10 ? 'selected' : '') + '>' + n + ' questões</option>';
@@ -230,12 +231,12 @@ var QuizView = (function () {
         '</div>' +
         '<div class="quiz-config card">' +
           '<div class="field">' +
-            '<label>Nível</label>' +
-            '<select id="qz-level">' + levelOpts + '</select>' +
+            '<label>Nível <span class="field-hint">(um ou mais)</span></label>' +
+            '<div class="chip-group" id="qz-levels">' + levelChips + '</div>' +
           '</div>' +
           '<div class="field">' +
-            '<label>Capítulo</label>' +
-            '<select id="qz-chapter"><option value="0">Todos os capítulos</option></select>' +
+            '<label>Capítulo <span class="field-hint">(um ou mais)</span></label>' +
+            '<div class="chip-group" id="qz-chapters"></div>' +
           '</div>' +
           '<div class="field">' +
             '<label>Número de questões</label>' +
@@ -255,20 +256,39 @@ var QuizView = (function () {
         '</div>' +
       '</div>';
 
-    var levelSel   = container.querySelector('#qz-level');
-    var chapterSel = container.querySelector('#qz-chapter');
     _type = 'meaning';
 
-    function updateChapters() {
-      var lv = parseInt(levelSel.value);
-      var chapters = lv ? KanjiData.getChaptersForLevel(lv) : [];
-      chapterSel.innerHTML = '<option value="0">Todos os capítulos</option>' +
-        chapters.map(function (ch) {
-          return '<option value="' + ch + '">Capítulo ' + ch + '</option>';
-        }).join('');
+    function updateChapterChips() {
+      var chaptersEl = container.querySelector('#qz-chapters');
+      var chapters = KanjiData.getChaptersForLevels(selectedLevels);
+      // Drop any previously selected chapters that no longer exist in the filtered set
+      selectedChapters = selectedChapters.filter(function (ch) { return chapters.indexOf(ch) !== -1; });
+      chaptersEl.innerHTML = chapters.map(function (ch) {
+        var sel = selectedChapters.indexOf(ch) !== -1 ? ' selected' : '';
+        return '<div class="filter-chip' + sel + '" data-chapter="' + ch + '">Cap. ' + ch + '</div>';
+      }).join('');
+      chaptersEl.querySelectorAll('.filter-chip').forEach(function (el) {
+        el.addEventListener('click', function () {
+          var ch = parseInt(el.dataset.chapter);
+          var idx = selectedChapters.indexOf(ch);
+          if (idx === -1) { selectedChapters.push(ch); el.classList.add('selected'); }
+          else            { selectedChapters.splice(idx, 1); el.classList.remove('selected'); }
+        });
+      });
     }
 
-    levelSel.addEventListener('change', updateChapters);
+    // Render chapter chips for the initial state (all levels = all chapters)
+    updateChapterChips();
+
+    container.querySelector('#qz-levels').addEventListener('click', function (e) {
+      var chip = e.target.closest('.filter-chip');
+      if (!chip) return;
+      var lv  = parseInt(chip.dataset.level);
+      var idx = selectedLevels.indexOf(lv);
+      if (idx === -1) { selectedLevels.push(lv); chip.classList.add('selected'); }
+      else            { selectedLevels.splice(idx, 1); chip.classList.remove('selected'); }
+      updateChapterChips();
+    });
 
     container.querySelectorAll('.quiz-type-opt').forEach(function (el) {
       el.addEventListener('click', function () {
@@ -280,11 +300,9 @@ var QuizView = (function () {
     container.querySelector('[data-type="meaning"]').classList.add('selected');
 
     container.querySelector('#btn-start-qz').addEventListener('click', function () {
-      var lv  = parseInt(levelSel.value);
-      var ch  = parseInt(chapterSel.value);
-      var cnt = parseInt(container.querySelector('#qz-count').value);
-      var pool = KanjiData.getPool(lv, ch);
-      var qs = buildQuestions(pool, _type, cnt);
+      var cnt  = parseInt(container.querySelector('#qz-count').value);
+      var pool = KanjiData.getPoolMulti(selectedLevels, selectedChapters);
+      var qs   = buildQuestions(pool, _type, cnt);
       qs = qs.filter(Boolean);
 
       if (!qs.length) {

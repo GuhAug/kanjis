@@ -94,6 +94,34 @@ var KanjiData = (function () {
     return getChapter(level, chapter).slice();
   }
 
+  // Multi-selection pool: levels and chapters are arrays (empty = all)
+  function getPoolMulti(levels, chapters) {
+    var pool;
+    if (!levels || !levels.length) {
+      pool = _data.slice();
+    } else {
+      pool = [];
+      levels.forEach(function (lv) { pool = pool.concat(_byLevel[lv] || []); });
+    }
+    if (chapters && chapters.length) {
+      pool = pool.filter(function (k) { return chapters.indexOf(k.chapter) !== -1; });
+    }
+    var seen = {};
+    return pool.filter(function (k) { return seen[k.id] ? false : (seen[k.id] = true); });
+  }
+
+  // All chapters that exist across a set of levels
+  function getChaptersForLevels(levels) {
+    var seen = {}, result = [];
+    var arr = levels && levels.length ? levels : Object.keys(_byLevel).map(Number);
+    arr.forEach(function (lv) {
+      (_byLevel[lv] || []).forEach(function (k) {
+        if (!seen[k.chapter]) { seen[k.chapter] = true; result.push(k.chapter); }
+      });
+    });
+    return result.sort(function (a, b) { return a - b; });
+  }
+
   // Fisher-Yates shuffle (in-place, returns arr)
   function shuffle(arr) {
     for (var i = arr.length - 1; i > 0; i--) {
@@ -205,6 +233,8 @@ var KanjiData = (function () {
     getChapterLabel: getChapterLabel,
     search: search,
     getPool: getPool,
+    getPoolMulti: getPoolMulti,
+    getChaptersForLevels: getChaptersForLevels,
     shuffle: shuffle,
     pickRandom: pickRandom,
     getDistractors: getDistractors,
