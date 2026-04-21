@@ -1231,6 +1231,20 @@ select option { background: var(--surface2); }
   font-family: 'Noto Sans JP', serif;
 }
 
+.quiz-stimulus .qs-sentence {
+  font-size: 1.5rem;
+  font-family: 'Noto Sans JP', serif;
+  line-height: 2.4;
+  color: var(--text);
+}
+
+.qs-target {
+  color: var(--accent2);
+  font-weight: 700;
+  border-bottom: 2px solid var(--accent2);
+  padding-bottom: 1px;
+}
+
 .quiz-options {
   display: grid;
   grid-template-columns: 1fr 1fr;

@@ -55,7 +55,7 @@ var QuizView = (function () {
         stimText:   null,
         options:    options,
         correct:    correctIndex,
-        explanation: { pt: k.pt, example: k.kunEx || k.onEx, translation: k.kunTr || k.onTr },
+        explanation: { pt: k.pt, example: k.kunEx || k.onEx, exampleHtml: k.kunExHtml || k.onExHtml, translation: k.kunTr || k.onTr },
       };
     }
 
@@ -72,7 +72,7 @@ var QuizView = (function () {
         stimText:  null,
         options:   options,
         correct:   options.indexOf(k.kun),
-        explanation: { pt: k.pt, example: k.kunEx, translation: k.kunTr },
+        explanation: { pt: k.pt, example: k.kunEx, exampleHtml: k.kunExHtml, translation: k.kunTr },
       };
     }
 
@@ -89,7 +89,7 @@ var QuizView = (function () {
         stimText:  null,
         options:   options,
         correct:   options.indexOf(k.on),
-        explanation: { pt: k.pt, example: k.onEx, translation: k.onTr },
+        explanation: { pt: k.pt, example: k.onEx, exampleHtml: k.onExHtml, translation: k.onTr },
       };
     }
 
@@ -107,7 +107,45 @@ var QuizView = (function () {
         stimText:  k.pt,
         options:   options,
         correct:   options.indexOf(k.k),
-        explanation: { pt: k.pt, example: k.kunEx || k.onEx, translation: k.kunTr || k.onTr },
+        explanation: { pt: k.pt, example: k.kunEx || k.onEx, exampleHtml: k.kunExHtml || k.onExHtml, translation: k.kunTr || k.onTr },
+      };
+    }
+
+    if (type === 'reading') {
+      // Sentence context → choose correct reading of highlighted kanji
+      var sentence = k.kunEx || k.onEx;
+      var sentenceHtml = k.kunExHtml || k.onExHtml;
+      var correctReading = k.kun
+        ? k.kun.split('、')[0].replace(/[（(][^）)]*[）)]/g, '').replace(/[～〜~]/g, '').trim()
+        : k.on ? k.on.split('、')[0].replace(/[（(][^）)]*[）)]/g, '').replace(/[～〜~]/g, '').replace(/[ァ-ン]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-0x60); }).trim() : null;
+      if (!sentence || !correctReading) return null;
+      var distR = KanjiData.getDistractors(k, k.kun ? 'kun' : 'on', 3);
+      if (distR.length < 3) return null;
+      // Clean distractor readings the same way
+      distR = distR.map(function(r){
+        return r.split('、')[0].replace(/[（(][^）)]*[）)]/g,'').replace(/[～〜~]/g,'')
+          .replace(/[ァ-ン]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0x60);}).trim();
+      }).filter(function(r){ return r && r !== correctReading; }).slice(0,3);
+      if (distR.length < 3) return null;
+      options = distR.concat([correctReading]);
+      KanjiData.shuffle(options);
+      // Build stimulus HTML: sentence with the target kanji wrapped in a highlight span
+      var stimHtml = sentenceHtml
+        ? sentenceHtml.replace(
+            new RegExp('(<ruby>' + k.k + '(?:<rt>[^<]*</rt>)?</ruby>|' + k.k + ')'),
+            '<span class="qs-target">$1</span>'
+          )
+        : sentence;
+      return {
+        kanjiId:   k.id,
+        type:      'reading',
+        stimLabel: 'Como se lê o kanji destacado?',
+        stimKanji: null,
+        stimText:  null,
+        stimSentence: stimHtml,
+        options:   options,
+        correct:   options.indexOf(correctReading),
+        explanation: { pt: k.pt, example: sentence, exampleHtml: sentenceHtml, translation: k.kunTr || k.onTr },
       };
     }
 
@@ -176,6 +214,7 @@ var QuizView = (function () {
               _typeOpt('kun',         '📝', 'Leitura Kun',    'Kanji → adivinhe a leitura Kun (hiragana)') +
               _typeOpt('on',          '🔊', 'Leitura On',     'Kanji → adivinhe a leitura On (katakana)') +
               _typeOpt('recognition', '🔍', 'Reconhecimento', 'Significado → identifique o kanji correto') +
+              _typeOpt('reading',     '📝', 'Leitura em frase', 'Frase completa → escolha a leitura do kanji destacado') +
             '</div>' +
           '</div>' +
           '<button class="btn btn-primary btn-lg w-full mt-16" id="btn-start-qz">Iniciar quiz</button>' +
@@ -253,8 +292,9 @@ var QuizView = (function () {
 
         '<div class="quiz-stimulus">' +
           '<div class="qs-label">' + q.stimLabel + '</div>' +
-          (q.stimKanji ? '<div class="qs-kanji">' + q.stimKanji + '</div>' : '') +
-          (q.stimText  ? '<div class="qs-text">'  + q.stimText  + '</div>' : '') +
+          (q.stimKanji    ? '<div class="qs-kanji">'    + q.stimKanji    + '</div>' : '') +
+          (q.stimText     ? '<div class="qs-text">'     + q.stimText     + '</div>' : '') +
+          (q.stimSentence ? '<div class="qs-sentence example-jp">' + q.stimSentence + '</div>' : '') +
         '</div>' +
 
         '<div class="quiz-options" id="qz-options">' +
@@ -266,7 +306,7 @@ var QuizView = (function () {
         '<div class="quiz-feedback" id="qz-feedback">' +
           '<div class="qf-result" id="qf-result"></div>' +
           (q.explanation.example ?
-            '<div class="qf-example example-jp">' + KanjiData.annotateEx(q.explanation.example) + '</div>' +
+            '<div class="qf-example example-jp">' + (q.explanation.exampleHtml || KanjiData.annotateEx(q.explanation.example)) + '</div>' +
             (q.explanation.translation ? '<div class="qf-trans">' + q.explanation.translation + '</div>' : '')
             : '') +
         '</div>' +

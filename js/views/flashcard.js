@@ -232,7 +232,7 @@ var FlashcardView = (function () {
         '<div class="fc-big-text" style="font-size:1.4rem">' + (k.pt || '') + '</div>' +
         (k.kun ? '<div class="fc-reading">Kun: ' + k.kun + '</div>' : '') +
         (k.on  ? '<div class="fc-reading">On: '  + k.on  + '</div>' : '') +
-        (k.kunEx ? '<div class="fc-example example-jp">' + KanjiData.annotateEx(k.kunEx, k.k) + '</div>' : '') +
+        (k.kunEx ? '<div class="fc-example example-jp">' + (k.kunExHtml || KanjiData.annotateEx(k.kunEx, k.k)) + '</div>' : '') +
         (k.kunTr ? '<div class="fc-translation">' + k.kunTr + '</div>' : '');
     }
     if (_mode === 'meaning-to-kanji') {
