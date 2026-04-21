@@ -112,36 +112,73 @@ var QuizView = (function () {
     }
 
     if (type === 'reading') {
-      // Sentence context → choose correct reading of highlighted kanji
-      var sentence = k.kunEx || k.onEx;
+      var sentence    = k.kunEx || k.onEx;
       var sentenceHtml = k.kunExHtml || k.onExHtml;
-      var correctReading = k.kun
-        ? k.kun.split('、')[0].replace(/[（(][^）)]*[）)]/g, '').replace(/[～〜~]/g, '').trim()
-        : k.on ? k.on.split('、')[0].replace(/[（(][^）)]*[）)]/g, '').replace(/[～〜~]/g, '').replace(/[ァ-ン]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-0x60); }).trim() : null;
-      if (!sentence || !correctReading) return null;
-      var distR = KanjiData.getDistractors(k, k.kun ? 'kun' : 'on', 3);
-      if (distR.length < 3) return null;
-      // Clean distractor readings the same way
-      distR = distR.map(function(r){
+      if (!sentence) return null;
+
+      // Find which token in the annotated HTML contains k.k.
+      // If it's a compound (今日, 音楽…) we ask for the full compound reading.
+      var targetSurface = k.k;
+      var correctReading = null;
+      if (sentenceHtml) {
+        var re = /<ruby>([^<]+)<rt>([^<]+)<\/rt><\/ruby>/g, m;
+        while ((m = re.exec(sentenceHtml)) !== null) {
+          if (m[1].indexOf(k.k) !== -1) {
+            targetSurface  = m[1];   // e.g. "今日"
+            correctReading = m[2];   // e.g. "きょう"
+            break;
+          }
+        }
+      }
+      // Fall back to isolated kun/on reading
+      function _cleanR(r) {
         return r.split('、')[0].replace(/[（(][^）)]*[）)]/g,'').replace(/[～〜~]/g,'')
-          .replace(/[ァ-ン]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0x60);}).trim();
-      }).filter(function(r){ return r && r !== correctReading; }).slice(0,3);
-      if (distR.length < 3) return null;
-      options = distR.concat([correctReading]);
+          .replace(/[ァ-ン]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-0x60); }).trim();
+      }
+      if (!correctReading) {
+        correctReading = k.kun ? _cleanR(k.kun) : (k.on ? _cleanR(k.on) : null);
+      }
+      if (!correctReading) return null;
+
+      // Build distractors:
+      // 1. Always include the naive single-kanji readings as tempting wrong answers
+      // 2. Fill remaining slots from pool
+      var distractors = [];
+      if (targetSurface !== k.k) {
+        // We're asking about a compound — add the isolated reading as a distractor
+        var naiveKun = k.kun ? _cleanR(k.kun) : null;
+        var naiveOn  = k.on  ? _cleanR(k.on)  : null;
+        if (naiveKun && naiveKun !== correctReading) distractors.push(naiveKun);
+        if (naiveOn  && naiveOn  !== correctReading && naiveOn !== naiveKun) distractors.push(naiveOn);
+      }
+      var poolDist = KanjiData.getDistractors(k, k.kun ? 'kun' : 'on', 4)
+        .map(_cleanR)
+        .filter(function(r){ return r && r !== correctReading && distractors.indexOf(r) === -1; });
+      distractors = distractors.concat(poolDist).slice(0, 3);
+      if (distractors.length < 3) return null;
+
+      options = distractors.concat([correctReading]);
       KanjiData.shuffle(options);
-      // Build stimulus: plain sentence with only the target kanji highlighted (no furigana)
-      var stimHtml = sentence
-        ? sentence.replace(new RegExp(k.k, 'g'), '<span class="qs-target">' + k.k + '</span>')
-        : sentence;
+
+      // Stimulus: plain sentence with the full target surface highlighted
+      var stimHtml = sentence.replace(
+        new RegExp(targetSurface.split('').join(''), 'g'),
+        '<span class="qs-target">' + targetSurface + '</span>'
+      );
+
+      var stimLabel = targetSurface.length > 1
+        ? 'Como se lê a palavra destacada?'
+        : 'Como se lê o kanji destacado?';
+
       return {
-        kanjiId:   k.id,
-        type:      'reading',
-        stimLabel: 'Como se lê o kanji destacado?',
-        stimKanji: null,
-        stimText:  null,
+        kanjiId:     k.id,
+        type:        'reading',
+        stimLabel:   stimLabel,
+        stimKanji:   null,
+        stimText:    null,
         stimSentence: stimHtml,
-        options:   options,
-        correct:   options.indexOf(correctReading),
+        options:     options,
+        correct:     options.indexOf(correctReading),
         explanation: { pt: k.pt, example: sentence, exampleHtml: sentenceHtml, translation: k.kunTr || k.onTr },
       };
     }
