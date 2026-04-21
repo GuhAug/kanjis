@@ -129,12 +129,9 @@ var QuizView = (function () {
       if (distR.length < 3) return null;
       options = distR.concat([correctReading]);
       KanjiData.shuffle(options);
-      // Build stimulus HTML: sentence with the target kanji wrapped in a highlight span
-      var stimHtml = sentenceHtml
-        ? sentenceHtml.replace(
-            new RegExp('(<ruby>' + k.k + '(?:<rt>[^<]*</rt>)?</ruby>|' + k.k + ')'),
-            '<span class="qs-target">$1</span>'
-          )
+      // Build stimulus: plain sentence with only the target kanji highlighted (no furigana)
+      var stimHtml = sentence
+        ? sentence.replace(new RegExp(k.k, 'g'), '<span class="qs-target">' + k.k + '</span>')
         : sentence;
       return {
         kanjiId:   k.id,
