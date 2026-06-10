@@ -311,15 +311,31 @@ var GrammarView = (function () {
 
         var stimLabel = CAT_FULL[item.category] + ' — ' + FORM_FULL[form];
 
-        // Distractors: same category + same form, different words
+        // Distractors: other tenses of the SAME word.
+        // For te-form questions the stimulus IS the plain present, so skip 'pres' to avoid
+        // showing the exact same form as both stimulus and option.
+        var distFormKeys = isTe
+          ? ['neg', 'past', 'past-neg']
+          : ['pres', 'neg', 'past', 'past-neg'].filter(function (k) { return k !== form; });
+
         var distractors = [];
-        pool.forEach(function (other) {
-          if (other.id === item.id) return;
-          var of = other.forms[form];
-          if (!of) return;
-          var val = toPlain ? of.plain : of.polite;
+        distFormKeys.forEach(function (dk) {
+          var df = item.forms[dk];
+          if (!df) return;
+          var val = toPlain ? df.plain : df.polite;
           if (val && val !== correctAnswer) distractors.push(val);
         });
+
+        // Fallback: if same-word forms aren't enough (e.g. sparse category), use other words
+        if (distractors.length < 3) {
+          pool.forEach(function (other) {
+            if (other.id === item.id) return;
+            var of = other.forms[form];
+            if (!of) return;
+            var val = toPlain ? of.plain : of.polite;
+            if (val) distractors.push(val);
+          });
+        }
 
         _shuffle(distractors);
         var seen = {}; var dists = [];
