@@ -18,6 +18,7 @@ var KanjiApp = (function () {
     { pattern: /^\/kanji\/(\d+)$/,            view: CardView },
     { pattern: /^\/flashcard(\/.*)?$/,        view: FlashcardView },
     { pattern: /^\/quiz(\/.*)?$/,             view: QuizView },
+    { pattern: /^\/grammar(\/\w+)?$/,         view: GrammarView },
   ];
 
   function _resolve(path) {

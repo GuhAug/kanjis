@@ -9,6 +9,7 @@ var Navbar = (function () {
     { path: '/browse',    icon: '📚', label: 'Navegar' },
     { path: '/flashcard', icon: '🃏', label: 'Flashcards' },
     { path: '/quiz',      icon: '✏️',  label: 'Quiz' },
+    { path: '/grammar',   icon: '🔀', label: 'Flexões' },
     { path: '/theory',    icon: '📖', label: 'Teoria' },
   ];
 

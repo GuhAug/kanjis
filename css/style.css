@@ -1681,3 +1681,168 @@ select option { background: var(--surface2); }
   color: var(--text-faint);
   margin-left: 4px;
 }
+
+/* ============================================================
+   GRAMMAR / FLEXION VIEW
+   ============================================================ */
+.grammar-config .field { margin-bottom: 16px; }
+.grammar-config label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.grammar-config select { width: 100%; }
+
+.gr-config-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+.gr-config-actions .btn-primary { flex: 1; }
+
+/* Theory cards */
+.grammar-theory-card {
+  margin-bottom: 20px;
+}
+.theory-cat-header {
+  font-size: 1.05rem;
+  margin-bottom: 12px;
+}
+.theory-note {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  background: var(--surface2);
+  border-left: 3px solid var(--accent);
+  padding: 6px 10px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-bottom: 12px;
+}
+
+/* Grammar table */
+.table-wrap { overflow-x: auto; margin-bottom: 12px; }
+.gr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.gr-table th {
+  background: var(--surface2);
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.gr-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'Noto Sans JP', sans-serif;
+  vertical-align: middle;
+}
+.gr-table .gr-td-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Te-form sub-table */
+.gr-te-table { margin-top: 12px; }
+.gr-te-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+/* Theory examples */
+.theory-examples { margin-top: 14px; }
+.gr-ex-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+.gr-ex-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.gr-ex-row:last-child { border-bottom: none; }
+.gr-word {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 1rem;
+  color: var(--text);
+}
+.gr-word-plain { color: var(--accent2); }
+.gr-arrow { color: var(--text-faint); font-size: 0.9rem; }
+.gr-meaning { font-size: 0.8rem; color: var(--text-muted); }
+
+/* Quiz stimulus for grammar */
+.gr-stimulus {
+  font-family: 'Noto Sans JP', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text);
+  margin: 12px 0 4px;
+  line-height: 1.3;
+}
+.gr-meaning-hint {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.gr-dir-hint {
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--text-faint);
+}
+.gr-dir-hint strong { color: var(--accent2); }
+
+/* Grammar quiz options — allow text wrapping */
+.gr-options { gap: 10px; }
+.gr-opt {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 1rem;
+  white-space: normal;
+  line-height: 1.4;
+  min-height: 52px;
+  hyphens: auto;
+}
+
+/* Explanation block shown after answer */
+.gr-explanation {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.gr-exp-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
+.gr-exp-row:last-child { margin-bottom: 0; }
+.gr-exp-lbl { color: var(--text-muted); font-size: 0.78rem; min-width: 58px; }
+.gr-exp-val { color: var(--accent2); font-size: 1rem; }
+
+@media (max-width: 600px) {
+  .gr-stimulus { font-size: 1.7rem; }
+  .gr-opt { font-size: 0.9rem; }
+}
