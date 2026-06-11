@@ -4,14 +4,38 @@
 
 var Navbar = (function () {
 
-  var NAV_ITEMS = [
-    { path: '/',          icon: '🏠', label: 'Início' },
+  // ---- Sidebar items (with section dividers) ----
+  var SIDEBAR_ITEMS = [
+    { type: 'item',    path: '/',          icon: '🏠', label: 'Início' },
+    { type: 'section', label: 'Kanji' },
+    { type: 'item',    path: '/browse',    icon: '📚', label: 'Navegar' },
+    { type: 'item',    path: '/flashcard', icon: '🃏', label: 'Flashcards' },
+    { type: 'item',    path: '/quiz',      icon: '✏️',  label: 'Quiz' },
+    { type: 'section', label: 'Gramática' },
+    { type: 'item',    path: '/grammar',   icon: '🔀', label: 'Flexões' },
+    { type: 'item',    path: '/theory',    icon: '📖', label: 'Teoria' },
+  ];
+
+  // ---- Mobile bottom nav ----
+  // Main row — 4 top-level tabs (漢 Kanji navigates to /browse)
+  var MAIN_NAV = [
+    { path: '/',        icon: '🏠', label: 'Início',  jp: false },
+    { path: '/browse',  icon: '漢', label: 'Kanji',   jp: true  },
+    { path: '/grammar', icon: '🔀', label: 'Flexões', jp: false },
+    { path: '/theory',  icon: '📖', label: 'Teoria',  jp: false },
+  ];
+
+  // Kanji sub-row — visible only when on a kanji path
+  var KANJI_SUB_NAV = [
     { path: '/browse',    icon: '📚', label: 'Navegar' },
     { path: '/flashcard', icon: '🃏', label: 'Flashcards' },
     { path: '/quiz',      icon: '✏️',  label: 'Quiz' },
-    { path: '/grammar',   icon: '🔀', label: 'Flexões' },
-    { path: '/theory',    icon: '📖', label: 'Teoria' },
   ];
+
+  function _isKanjiPath(path) {
+    return path.startsWith('/browse') || path.startsWith('/flashcard') ||
+           path.startsWith('/quiz')   || path.startsWith('/kanji');
+  }
 
   function render() {
     renderSidebar();
@@ -25,7 +49,10 @@ var Navbar = (function () {
     var stats = KanjiStorage.getStats();
     var pct = stats.pct;
 
-    var items = NAV_ITEMS.map(function (item) {
+    var items = SIDEBAR_ITEMS.map(function (item) {
+      if (item.type === 'section') {
+        return '<div class="nav-section-label">' + item.label + '</div>';
+      }
       return '<div class="nav-item" data-nav="' + item.path + '">' +
         '<span class="nav-icon">' + item.icon + '</span>' +
         '<span>' + item.label + '</span>' +
@@ -61,14 +88,24 @@ var Navbar = (function () {
     var el = document.getElementById('bottom-nav');
     if (!el) return;
 
-    var items = NAV_ITEMS.map(function (item) {
-      return '<div class="bottom-nav-item" data-nav="' + item.path + '">' +
+    var subItems = KANJI_SUB_NAV.map(function (item) {
+      return '<div class="bottom-nav-item bn-sub" data-nav="' + item.path + '">' +
         '<span class="nav-icon">' + item.icon + '</span>' +
         '<span>' + item.label + '</span>' +
-        '</div>';
+      '</div>';
     }).join('');
 
-    el.innerHTML = items;
+    var mainItems = MAIN_NAV.map(function (item) {
+      var iconCls = item.jp ? 'nav-icon nav-icon-jp' : 'nav-icon';
+      return '<div class="bottom-nav-item" data-nav="' + item.path + '">' +
+        '<span class="' + iconCls + '">' + item.icon + '</span>' +
+        '<span>' + item.label + '</span>' +
+      '</div>';
+    }).join('');
+
+    el.innerHTML =
+      '<div class="bn-kanji-row" id="bn-kanji-row">' + subItems + '</div>' +
+      '<div class="bn-main-row">' + mainItems + '</div>';
 
     el.addEventListener('click', function (e) {
       var item = e.target.closest('[data-nav]');
@@ -77,18 +114,39 @@ var Navbar = (function () {
   }
 
   function updateActive(path) {
-    // Sidebar
+    var isKanji = _isKanjiPath(path);
+
+    // Sidebar: highlight matching item
     document.querySelectorAll('.sidebar .nav-item').forEach(function (el) {
       var navPath = el.dataset.nav;
       var active = (navPath === '/' ? path === '/' : path.startsWith(navPath));
       el.classList.toggle('active', active);
     });
-    // Bottom nav
-    document.querySelectorAll('.bottom-nav .bottom-nav-item').forEach(function (el) {
+
+    // Bottom nav — main row: 漢 Kanji tab active for any kanji path
+    document.querySelectorAll('.bn-main-row .bottom-nav-item').forEach(function (el) {
       var navPath = el.dataset.nav;
-      var active = (navPath === '/' ? path === '/' : path.startsWith(navPath));
+      var active;
+      if (navPath === '/browse') {
+        active = isKanji;
+      } else if (navPath === '/') {
+        active = (path === '/');
+      } else {
+        active = path.startsWith(navPath);
+      }
       el.classList.toggle('active', active);
     });
+
+    // Bottom nav — kanji sub-row: highlight the matching sub-item
+    document.querySelectorAll('.bn-kanji-row .bottom-nav-item').forEach(function (el) {
+      var navPath = el.dataset.nav;
+      var active = path.startsWith(navPath);
+      el.classList.toggle('active', active);
+    });
+
+    // Show kanji sub-row when on a kanji path
+    var kanjiRow = document.getElementById('bn-kanji-row');
+    if (kanjiRow) kanjiRow.classList.toggle('kanji-active', isKanji);
   }
 
   function updateProgress() {

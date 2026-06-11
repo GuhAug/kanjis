@@ -190,6 +190,17 @@ select option { background: var(--surface2); }
   text-align: center;
 }
 
+/* Sidebar section dividers */
+.nav-section-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 14px 24px 4px;
+  user-select: none;
+}
+
 .sidebar-progress {
   padding: 16px 20px;
   border-top: 1px solid var(--border);
@@ -223,19 +234,45 @@ select option { background: var(--surface2); }
    ============================================================ */
 .bottom-nav {
   display: none;
+  flex-direction: column;
   position: fixed;
   bottom: 0; left: 0; right: 0;
   background: var(--surface);
   border-top: 1px solid var(--border);
-  padding: 8px 0 max(8px, env(safe-area-inset-bottom, 0px));
+  padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
   z-index: 1000;
-  justify-content: space-around;
   /* Force GPU compositing to prevent iOS Safari fixed-element ghosting */
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   will-change: transform;
+}
+
+/* Kanji sub-row — always reserves its height; opacity transitions in */
+.bn-kanji-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 3px 0;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.bn-kanji-row.kanji-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Main row (always fully visible) */
+.bn-main-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 4px 0;
 }
 
 .bottom-nav-item {
@@ -257,6 +294,25 @@ select option { background: var(--surface2); }
 .bottom-nav-item .nav-icon { font-size: 1.3rem; }
 
 .bottom-nav-item.active { color: var(--accent2); }
+
+/* Kanji sub-row items — slightly compact */
+.bn-sub {
+  font-size: 0.63rem;
+  min-width: 44px;
+  padding: 4px 10px;
+  gap: 2px;
+}
+.bn-sub .nav-icon { font-size: 1.1rem; }
+
+/* 漢 Kanji tab icon — uses Noto Sans JP kanji character */
+.bottom-nav-item .nav-icon-jp {
+  font-family: 'Noto Sans JP', serif;
+  font-weight: 700;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--accent);
+}
+.bottom-nav-item.active .nav-icon-jp { color: var(--accent2); }
 
 /* ============================================================
    PAGE HEADER
@@ -1618,7 +1674,7 @@ select option { background: var(--surface2); }
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .layout { margin-left: 0; }
-  .app-main { padding: 16px 16px calc(80px + env(safe-area-inset-bottom, 0px)); }
+  .app-main { padding: 16px 16px calc(118px + env(safe-area-inset-bottom, 0px)); }
   .bottom-nav { display: flex; }
 
   .theory-layout { flex-direction: column; }
