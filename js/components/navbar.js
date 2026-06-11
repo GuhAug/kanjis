@@ -144,9 +144,10 @@ var Navbar = (function () {
       el.classList.toggle('active', active);
     });
 
-    // Show kanji sub-row when on a kanji path
+    // Show kanji sub-row and expand bottom padding when on a kanji path
     var kanjiRow = document.getElementById('bn-kanji-row');
     if (kanjiRow) kanjiRow.classList.toggle('kanji-active', isKanji);
+    document.body.classList.toggle('kanji-section', isKanji);
   }
 
   function updateProgress() {

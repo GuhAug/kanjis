@@ -249,20 +249,22 @@ select option { background: var(--surface2); }
   will-change: transform;
 }
 
-/* Kanji sub-row — always reserves its height; opacity transitions in */
+/* Kanji sub-row — collapses to zero height when not on a kanji path */
 .bn-kanji-row {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 3px 0;
   background: var(--surface2);
   border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  max-height: 0;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.18s ease;
+  transition: max-height 0.2s ease, opacity 0.18s ease;
 }
 
 .bn-kanji-row.kanji-active {
+  max-height: 52px;
   opacity: 1;
   pointer-events: auto;
 }
@@ -1674,7 +1676,8 @@ select option { background: var(--surface2); }
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .layout { margin-left: 0; }
-  .app-main { padding: 16px 16px calc(118px + env(safe-area-inset-bottom, 0px)); }
+  .app-main { padding: 16px 16px calc(76px + env(safe-area-inset-bottom, 0px)); }
+  body.kanji-section .app-main { padding-bottom: calc(122px + env(safe-area-inset-bottom, 0px)); }
   .bottom-nav { display: flex; }
 
   .theory-layout { flex-direction: column; }
