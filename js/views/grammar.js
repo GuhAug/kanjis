@@ -59,7 +59,7 @@ var GrammarView = (function () {
     container.innerHTML =
       '<div class="view-enter">' +
         '<div class="page-header">' +
-          '<h1>🔀 Flexões</h1>' +
+          '<h1>🔀 Formas Polida e Informal</h1>' +
           '<p>Pratique a transformação entre formas polidas (丁寧語) e informais (普通体).</p>' +
         '</div>' +
         '<div class="grammar-config card">' +
@@ -144,7 +144,7 @@ var GrammarView = (function () {
     container.innerHTML =
       '<div class="view-enter">' +
         '<div class="page-header">' +
-          '<h1>📖 Teoria — Flexões</h1>' +
+          '<h1>📖 Teoria — Formas Polida e Informal</h1>' +
           '<p>Regras de transformação entre forma polida (丁寧語) e informal (普通体).</p>' +
         '</div>' +
         _theoryVerbs() +

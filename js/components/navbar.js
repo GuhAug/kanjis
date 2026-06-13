@@ -14,7 +14,7 @@ var Navbar = (function () {
     { type: 'item',    path: '/flashcard', icon: '🃏', label: 'Flashcards' },
     { type: 'item',    path: '/quiz',      icon: '✏️',  label: 'Quiz' },
     { type: 'section', label: 'Gramática' },
-    { type: 'item',    path: '/grammar',   icon: '🔀', label: 'Flexões' },
+    { type: 'item',    path: '/grammar',   icon: '🔀', label: 'Formas Polida e Informal' },
     { type: 'item',    path: '/theory',    icon: '📖', label: 'Teoria' },
   ];
 
@@ -32,7 +32,7 @@ var Navbar = (function () {
     {
       type: 'section', label: 'Gramática',
       items: [
-        { path: '/grammar', icon: '🔀', label: 'Flexões' },
+        { path: '/grammar', icon: '🔀', label: 'Formas Polida e Informal' },
       ]
     },
     { type: 'item', path: '/theory', icon: '📖', label: 'Teoria' },

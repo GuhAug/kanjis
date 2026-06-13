@@ -25,16 +25,17 @@ var HomeView = (function () {
           _statCard('📝', (stats.quizHistory.length > 0 ? stats.quizHistory[0].score + '/' + stats.quizHistory[0].total : '—'), 'Último quiz') +
         '</div>' +
 
-        '<div class="section-title">Progresso por nível</div>' +
-        _renderLevelProgress(stats) +
-
         '<div class="section-title">Atalhos</div>' +
         '<div class="home-cta-grid">' +
           _ctaCard('📚', 'Navegar Kanji', 'Explore por nível e capítulo', '/browse') +
           _ctaCard('🃏', 'Flashcards', 'Pratique com virada de cartas', '/flashcard') +
-          _ctaCard('✏️', 'Quiz', 'Teste seus conhecimentos', '/quiz') +
+          _ctaCard('✏️', 'Quiz de Kanji', 'Teste seus conhecimentos', '/quiz') +
+          _ctaCard('🔀', 'Formas Polida e Informal', 'Pratique conjugações e flexões', '/grammar') +
           _ctaCard('📖', 'Teoria', 'Aprenda sobre o sistema de escrita', '/theory') +
         '</div>' +
+
+        '<div class="section-title">Kanji — Progresso por nível</div>' +
+        _renderLevelProgress(stats) +
 
         (stats.quizHistory.length > 0 ?
           '<div class="section-title mt-24">Histórico de quizzes</div>' +
