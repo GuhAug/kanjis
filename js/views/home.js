@@ -12,7 +12,7 @@ var HomeView = (function () {
     container.innerHTML =
       '<div class="view-enter">' +
         '<div class="page-header">' +
-          '<h1>Bem-vindo ao Kanji Progressive</h1>' +
+          '<h1>Bem-vindo ao Nihongo Progressive</h1>' +
           '<p>Acompanhe seu progresso e continue estudando.</p>' +
         '</div>' +
 

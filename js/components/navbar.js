@@ -69,7 +69,7 @@ var Navbar = (function () {
     el.innerHTML =
       '<div class="top-bar-logo">' +
         '<span class="top-bar-kanji">漢</span>' +
-        '<span class="top-bar-title">Kanji Progressive</span>' +
+        '<span class="top-bar-title">Nihongo Progressive</span>' +
       '</div>' +
       '<button class="hamburger-btn" id="hamburger-btn" aria-label="Abrir menu">☰</button>';
 
@@ -115,7 +115,7 @@ var Navbar = (function () {
         '<div class="drawer-logo">' +
           '<span class="drawer-kanji">漢</span>' +
           '<div class="drawer-logo-text">' +
-            '<span class="drawer-title">Kanji Progressive</span>' +
+            '<span class="drawer-title">Nihongo Progressive</span>' +
             '<span class="drawer-sub">Novo Progressivo 1–4</span>' +
           '</div>' +
         '</div>' +
@@ -167,7 +167,7 @@ var Navbar = (function () {
       '<div class="sidebar-logo">' +
         '<div class="logo-kanji">漢</div>' +
         '<div class="logo-text">' +
-          '<span class="logo-title">Kanji Progressive</span>' +
+          '<span class="logo-title">Nihongo Progressive</span>' +
           '<span class="logo-sub">Novo Progressivo 1–4</span>' +
         '</div>' +
       '</div>' +
