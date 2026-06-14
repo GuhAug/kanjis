@@ -1,0 +1,282 @@
+// ============================================================
+// particles.js — Particle placement quiz
+// ============================================================
+
+var ParticlesView = (function () {
+
+  var _questions = [];
+  var _index     = 0;
+  var _score     = 0;
+  var _answers   = [];
+  var _answered  = false;
+  var _count     = 20;
+
+  function render(container, params) {
+    var sub = params[1] || '';
+    if      (sub === '/session' && _questions.length) _renderSession(container);
+    else if (sub === '/results' && _answers.length)   _renderResults(container);
+    else                                              _renderConfig(container);
+  }
+
+  // ── Config ──────────────────────────────────────────────
+
+  function _renderConfig(container) {
+    var total = (window.PARTICLES_DATA || []).length;
+
+    container.innerHTML =
+      '<div class="view-enter">' +
+        '<div class="page-header">' +
+          '<h1>🧩 Partículas</h1>' +
+          '<p>Escolha a partícula correta para completar cada frase.</p>' +
+        '</div>' +
+        '<div class="grammar-config card">' +
+          '<div class="field">' +
+            '<label>Número de questões</label>' +
+            '<select id="pt-count">' +
+              '<option value="10"' + (_count === 10 ? ' selected' : '') + '>10 questões</option>' +
+              '<option value="20"' + (_count === 20 ? ' selected' : '') + '>20 questões</option>' +
+              '<option value="0"'  + (_count === 0  ? ' selected' : '') + '>Todas (' + total + ')</option>' +
+            '</select>' +
+          '</div>' +
+          '<div class="gr-config-actions">' +
+            '<button class="btn btn-primary btn-lg" id="btn-start-pt">Iniciar Quiz</button>' +
+          '</div>' +
+        '</div>' +
+        _renderParticleRef() +
+      '</div>';
+
+    container.querySelector('#pt-count').addEventListener('change', function () {
+      _count = parseInt(this.value);
+    });
+
+    container.querySelector('#btn-start-pt').addEventListener('click', function () {
+      var data = (window.PARTICLES_DATA || []).slice();
+      _shuffle(data);
+      _questions = _count > 0 ? data.slice(0, _count) : data;
+      if (!_questions.length) {
+        Toast.error('Dados de partículas não encontrados.');
+        return;
+      }
+      _index = 0; _score = 0; _answers = []; _answered = false;
+      _renderSession(container);
+    });
+  }
+
+  function _renderParticleRef() {
+    var rows = [
+      ['は',   'Tópico da frase',                     'Esta loja ___ famosa.'],
+      ['が',   'Sujeito / foco',                      'Quem ___ veio?'],
+      ['を',   'Objeto direto',                       'Vou comer arroz ___.'],
+      ['に',   'Destino / tempo / local (existência)', 'Vou ___ escola. / Às 7h'],
+      ['で',   'Local de ação / meio / instrumento',  'Estudo ___ biblioteca.'],
+      ['と',   'Companhia / lista completa',          'Fui com amigos ___.'],
+      ['も',   'Inclusão (também)',                   'Yamada ___ é estudante.'],
+      ['の',   'Possessivo / modificador',            'É o livro ___ Tanaka.'],
+      ['から', 'Ponto de partida',                    'Vim ___ Japão.'],
+      ['まで', 'Ponto final',                         'Trabalho ___ as 6h.'],
+      ['へ',   'Direção (ênfase no trajeto)',          'Quero ir ___ exterior.'],
+      ['より', 'Comparação (do que)',                  'Trem é mais rápido ___ ônibus.'],
+    ];
+
+    var tableRows = rows.map(function (r) {
+      return '<tr>' +
+        '<td class="pt-ref-particle">' + r[0] + '</td>' +
+        '<td>' + r[1] + '</td>' +
+        '<td class="pt-ref-ex">' + r[2] + '</td>' +
+      '</tr>';
+    }).join('');
+
+    return '<div class="section-title mt-24">Referência rápida</div>' +
+      '<div class="card" style="overflow-x:auto">' +
+        '<table class="gr-table">' +
+          '<thead><tr><th>Partícula</th><th>Função</th><th>Exemplo</th></tr></thead>' +
+          '<tbody>' + tableRows + '</tbody>' +
+        '</table>' +
+      '</div>';
+  }
+
+  // ── Session ──────────────────────────────────────────────
+
+  function _renderSession(container) {
+    if (_index >= _questions.length) {
+      _renderResults(container);
+      return;
+    }
+
+    _answered = false;
+    var q   = _questions[_index];
+    var pct = Math.round((_index / _questions.length) * 100);
+
+    // Build shuffled options once (stable for this question render)
+    var allOpts = q.distractors.concat([q.particle]);
+    _shuffle(allOpts);
+    var correctIdx = allOpts.indexOf(q.particle);
+
+    var sentenceHTML = q.sentence.replace('___',
+      '<span class="particle-blank" id="pt-blank">＿＿</span>');
+
+    var optsHTML = allOpts.map(function (opt, i) {
+      return '<button class="quiz-option pt-opt" data-idx="' + i + '">' + opt + '</button>';
+    }).join('');
+
+    container.innerHTML =
+      '<div class="view-enter quiz-session">' +
+        '<div class="quiz-prog-bar"><div class="quiz-prog-fill" style="width:' + pct + '%"></div></div>' +
+        '<div class="quiz-counter">' + (_index + 1) + ' / ' + _questions.length + '</div>' +
+
+        '<div class="quiz-stimulus">' +
+          '<div class="pt-sentence">' + sentenceHTML + '</div>' +
+          '<div class="gr-meaning-hint">(' + q.meaning + ')</div>' +
+        '</div>' +
+
+        '<div class="quiz-options pt-options" id="pt-options">' + optsHTML + '</div>' +
+
+        '<div class="quiz-feedback" id="pt-feedback">' +
+          '<div class="qf-result" id="pt-result"></div>' +
+          '<div class="gr-explanation" id="pt-exp" style="display:none">' +
+            '<div class="gr-exp-row">' +
+              '<span class="gr-exp-lbl">Função:</span>' +
+              '<span class="gr-exp-val" style="font-size:0.9rem">' + q.role + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
+        '<button class="btn btn-primary quiz-next-btn hidden" id="pt-next">Próxima →</button>' +
+        '<div style="text-align:center;margin-top:12px">' +
+          '<button class="btn btn-ghost" id="pt-exit" style="font-size:0.85rem;opacity:0.6">✕ Sair</button>' +
+        '</div>' +
+      '</div>';
+
+    var optionsEl  = container.querySelector('#pt-options');
+    var feedbackEl = container.querySelector('#pt-feedback');
+    var resultEl   = container.querySelector('#pt-result');
+    var expEl      = container.querySelector('#pt-exp');
+    var nextBtn    = container.querySelector('#pt-next');
+    var blank      = container.querySelector('#pt-blank');
+
+    function answer(chosenIdx) {
+      if (_answered) return;
+      _answered = true;
+
+      var isCorrect = (chosenIdx === correctIdx);
+      if (isCorrect) _score++;
+      _answers.push({
+        id:        q.id,
+        sentence:  q.sentence,
+        meaning:   q.meaning,
+        correct:   q.particle,
+        chosen:    allOpts[chosenIdx],
+        isCorrect: isCorrect,
+      });
+
+      blank.textContent = q.particle;
+      blank.classList.add(isCorrect ? 'pt-blank-correct' : 'pt-blank-wrong');
+
+      optionsEl.querySelectorAll('.pt-opt').forEach(function (btn) {
+        btn.classList.add('answered');
+        var idx = parseInt(btn.dataset.idx);
+        if (idx === correctIdx)                   btn.classList.add('correct');
+        else if (idx === chosenIdx && !isCorrect) btn.classList.add('wrong');
+      });
+
+      feedbackEl.classList.add('show', isCorrect ? 'correct-fb' : 'wrong-fb');
+      resultEl.textContent = isCorrect
+        ? '✅ Correto!'
+        : '❌ Errado. Resposta: ' + q.particle;
+      expEl.style.display = 'block';
+      nextBtn.classList.remove('hidden');
+
+      KanjiApp.setKeyHandler(function (e) {
+        if (e.key === 'ArrowRight' || e.key === 'Enter') nextBtn.click();
+      });
+    }
+
+    optionsEl.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-idx]');
+      if (btn) answer(parseInt(btn.dataset.idx));
+    });
+
+    nextBtn.addEventListener('click', function () {
+      _index++;
+      _renderSession(container);
+    });
+
+    container.querySelector('#pt-exit').addEventListener('click', function () {
+      _index = 0; _score = 0; _answers = []; _questions = [];
+      _renderConfig(container);
+    });
+
+    KanjiApp.setKeyHandler(function (e) {
+      var n = parseInt(e.key);
+      if (n >= 1 && n <= 4) answer(n - 1);
+    });
+  }
+
+  // ── Results ──────────────────────────────────────────────
+
+  function _renderResults(container) {
+    var total = _questions.length;
+    var pct   = total ? Math.round((_score / total) * 100) : 0;
+    var emoji = pct === 100 ? '🏆' : pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '💪';
+
+    var wrongHTML = _answers.filter(function (a) { return !a.isCorrect; }).map(function (a) {
+      var displayed = a.sentence.replace('___',
+        '<span style="color:var(--danger);font-weight:700">' + a.chosen + '</span>');
+      var corrected = a.sentence.replace('___',
+        '<span style="color:var(--success);font-weight:700">' + a.correct + '</span>');
+      return '<div class="wrong-item" style="flex-direction:column;gap:4px;align-items:flex-start">' +
+        '<div class="pt-wr-sent pt-wr-wrong">' + displayed + '</div>' +
+        '<div class="pt-wr-sent pt-wr-right">' + corrected + '</div>' +
+        '<div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px">' + a.meaning + '</div>' +
+      '</div>';
+    }).join('');
+
+    container.innerHTML =
+      '<div class="view-enter quiz-results">' +
+        '<div class="qr-score-big">' +
+          '<div style="font-size:2.5rem">' + emoji + '</div>' +
+          '<div class="qr-num">' + _score + ' / ' + total + '</div>' +
+          '<div class="qr-label">respostas corretas</div>' +
+          '<div class="qr-pct" style="color:' + _pctColor(pct) + '">' + pct + '%</div>' +
+        '</div>' +
+        (wrongHTML
+          ? '<div class="section-title">Respostas erradas</div>' +
+            '<div class="wrong-list">' + wrongHTML + '</div>'
+          : '') +
+        '<div class="qr-actions">' +
+          '<button class="btn btn-primary btn-lg" id="btn-redo-pt">🔁 Refazer</button>' +
+          '<button class="btn btn-ghost" id="btn-back-pt">← Voltar</button>' +
+        '</div>' +
+      '</div>';
+
+    container.querySelector('#btn-redo-pt').addEventListener('click', function () {
+      _index = 0; _score = 0; _answers = [];
+      _shuffle(_questions);
+      _renderSession(container);
+    });
+    container.querySelector('#btn-back-pt').addEventListener('click', function () {
+      _index = 0; _score = 0; _answers = []; _questions = [];
+      _renderConfig(container);
+    });
+    KanjiApp.setKeyHandler(null);
+  }
+
+  function _pctColor(pct) {
+    if (pct >= 80) return 'var(--success)';
+    if (pct >= 50) return 'var(--warning)';
+    return 'var(--danger)';
+  }
+
+  function _shuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  function destroy() { KanjiApp.setKeyHandler(null); }
+
+  return { render: render, destroy: destroy };
+
+})();

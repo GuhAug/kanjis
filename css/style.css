@@ -2036,3 +2036,100 @@ select option { background: var(--surface2); }
   .gr-stimulus { font-size: 1.7rem; }
   .gr-opt { font-size: 0.9rem; }
 }
+
+/* ============================================================
+   PARTICLE QUIZ
+   ============================================================ */
+
+/* Sentence with blank */
+.pt-sentence {
+  font-family: 'Noto Sans JP', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text);
+  line-height: 1.6;
+  margin: 16px 0 8px;
+}
+
+.particle-blank {
+  display: inline-block;
+  min-width: 2.2rem;
+  border-bottom: 3px solid var(--accent);
+  color: var(--accent);
+  text-align: center;
+  transition: color var(--transition), border-color var(--transition);
+  vertical-align: bottom;
+  line-height: 1.2;
+}
+
+.particle-blank.pt-blank-correct {
+  color: var(--success);
+  border-color: var(--success);
+}
+
+.particle-blank.pt-blank-wrong {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* Particle option buttons — larger than normal quiz options */
+.pt-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-width: 400px;
+  margin: 20px auto 0;
+}
+
+.pt-opt {
+  font-family: 'Noto Sans JP', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  padding: 16px 12px;
+  border-radius: var(--radius);
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  color: var(--text);
+  cursor: pointer;
+  text-align: center;
+  transition: all var(--transition);
+}
+
+.pt-opt:hover:not(.answered) {
+  border-color: var(--accent);
+  color: var(--accent2);
+  background: var(--accent-glow);
+}
+
+.pt-opt.answered { cursor: default; }
+.pt-opt.correct  { background: var(--success-dim); border-color: var(--success); color: var(--success); }
+.pt-opt.wrong    { background: var(--danger-dim);  border-color: var(--danger);  color: var(--danger); }
+
+/* Particle reference table cell */
+.pt-ref-particle {
+  font-family: 'Noto Sans JP', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent2);
+  text-align: center;
+}
+
+.pt-ref-ex {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* Wrong answers in results */
+.pt-wr-sent {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 1rem;
+}
+
+.pt-wr-wrong { color: var(--text-muted); text-decoration: line-through; }
+.pt-wr-right { color: var(--text); }
+
+@media (max-width: 480px) {
+  .pt-sentence { font-size: 1.4rem; }
+  .pt-opt { font-size: 1.3rem; padding: 12px 8px; }
+}

@@ -14,8 +14,9 @@ var Navbar = (function () {
     { type: 'item',    path: '/flashcard', icon: '🃏', label: 'Flashcards' },
     { type: 'item',    path: '/quiz',      icon: '✏️',  label: 'Quiz' },
     { type: 'section', label: 'Gramática' },
-    { type: 'item',    path: '/grammar',   icon: '🔀', label: 'Formas Polida e Informal' },
-    { type: 'item',    path: '/theory',    icon: '📖', label: 'Teoria' },
+    { type: 'item',    path: '/grammar',    icon: '🔀', label: 'Formas Polida e Informal' },
+    { type: 'item',    path: '/particles',  icon: '🧩', label: 'Partículas' },
+    { type: 'item',    path: '/theory',     icon: '📖', label: 'Teoria' },
   ];
 
   // ---- Drawer structure (mobile) — card sections per theme ----
@@ -32,7 +33,8 @@ var Navbar = (function () {
     {
       type: 'section', label: 'Gramática',
       items: [
-        { path: '/grammar', icon: '🔀', label: 'Formas Polida e Informal' },
+        { path: '/grammar',   icon: '🔀', label: 'Formas Polida e Informal' },
+        { path: '/particles', icon: '🧩', label: 'Partículas' },
       ]
     },
     { type: 'item', path: '/theory', icon: '📖', label: 'Teoria' },
