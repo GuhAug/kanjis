@@ -4,12 +4,13 @@
 
 var TransitivityView = (function () {
 
-  var _questions = [];
-  var _index     = 0;
-  var _score     = 0;
-  var _answers   = [];
-  var _answered  = false;
-  var _count     = 20;
+  var _questions      = [];
+  var _index          = 0;
+  var _score          = 0;
+  var _answers        = [];
+  var _answered       = false;
+  var _count          = 20;
+  var _resultRecorded = false;
 
   function render(container, params) {
     var sub = params[1] || '';
@@ -53,7 +54,7 @@ var TransitivityView = (function () {
     container.querySelector('#btn-start-tr').addEventListener('click', function () {
       var qs = _buildQuestions(_count);
       if (!qs.length) { Toast.error('Dados não encontrados.'); return; }
-      _questions = qs; _index = 0; _score = 0; _answers = [];
+      _questions = qs; _index = 0; _score = 0; _answers = []; _resultRecorded = false;
       _renderSession(container);
     });
   }
@@ -241,6 +242,7 @@ var TransitivityView = (function () {
       var isCorrect = (chosenIdx === q.correctIdx);
       if (isCorrect) _score++;
       _answers.push({
+        qIdx:        _index,
         sentence:    q.sentence,
         meaning:     q.meaning,
         pair:        q.pair,
@@ -300,7 +302,13 @@ var TransitivityView = (function () {
     var pct   = total ? Math.round((_score / total) * 100) : 0;
     var emoji = pct === 100 ? '🏆' : pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '💪';
 
-    var wrongHTML = _answers.filter(function (a) { return !a.isCorrect; }).map(function (a) {
+    if (!_resultRecorded) {
+      KanjiStorage.recordGrammarQuiz('Transitivo e Intransitivo', _score, total);
+      _resultRecorded = true;
+    }
+
+    var wrongAnswers = _answers.filter(function (a) { return !a.isCorrect; });
+    var wrongHTML    = wrongAnswers.map(function (a) {
       var displayed = a.sentence.replace('___',
         '<span style="color:var(--danger);font-weight:700">' + a.chosen + '</span>');
       var corrected = a.sentence.replace('___',
@@ -329,6 +337,9 @@ var TransitivityView = (function () {
           : '') +
         '<div class="qr-actions">' +
           '<button class="btn btn-primary btn-lg" id="btn-redo-tr">🔁 Refazer</button>' +
+          (wrongAnswers.length > 0
+            ? '<button class="btn btn-secondary" id="btn-review-tr">📚 Rever erros (' + wrongAnswers.length + ')</button>'
+            : '') +
           '<button class="btn btn-ghost" id="btn-back-tr">← Voltar</button>' +
         '</div>' +
       '</div>';
@@ -338,8 +349,18 @@ var TransitivityView = (function () {
       _shuffle(_questions);
       _renderSession(container);
     });
+    var reviewBtn = container.querySelector('#btn-review-tr');
+    if (reviewBtn) reviewBtn.addEventListener('click', function () {
+      var seen = {};
+      var wrongQs = wrongAnswers
+        .filter(function (a) { if (seen[a.qIdx]) return false; seen[a.qIdx] = true; return true; })
+        .map(function (a) { return _questions[a.qIdx]; })
+        .filter(Boolean);
+      _questions = wrongQs; _index = 0; _score = 0; _answers = [];
+      _renderSession(container);
+    });
     container.querySelector('#btn-back-tr').addEventListener('click', function () {
-      _index = 0; _score = 0; _answers = []; _questions = [];
+      _index = 0; _score = 0; _answers = []; _questions = []; _resultRecorded = false;
       _renderConfig(container);
     });
     KanjiApp.setKeyHandler(null);

@@ -151,6 +151,28 @@ var KanjiStorage = (function () {
     return streak;
   }
 
+  // ---- Grammar Quiz History ----
+
+  var GRAMMAR_KEY = 'nihongo_grammar_history';
+
+  function recordGrammarQuiz(type, score, total) {
+    try {
+      var h = JSON.parse(localStorage.getItem(GRAMMAR_KEY) || '[]');
+      h.unshift({ type: type, score: score, total: total, date: _today() });
+      if (h.length > 20) h = h.slice(0, 20);
+      localStorage.setItem(GRAMMAR_KEY, JSON.stringify(h));
+      var d = _ensure(_load());
+      _recordActivity(d);
+      _save(d);
+    } catch (e) {}
+  }
+
+  function getGrammarHistory() {
+    try {
+      return JSON.parse(localStorage.getItem(GRAMMAR_KEY) || '[]').slice(0, 5);
+    } catch (e) { return []; }
+  }
+
   // ---- Export / Import / Reset ----
 
   function exportJSON() {
@@ -186,6 +208,8 @@ var KanjiStorage = (function () {
     isMastered: isMastered,
     getStats: getStats,
     recordQuiz: recordQuiz,
+    recordGrammarQuiz: recordGrammarQuiz,
+    getGrammarHistory: getGrammarHistory,
     exportJSON: exportJSON,
     importJSON: importJSON,
     reset: reset,

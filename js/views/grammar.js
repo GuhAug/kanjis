@@ -24,11 +24,12 @@ var GrammarView = (function () {
   var CAT_FULL  = { verb:'Verbos', noun:'Substantivos', i_adj:'い-adjetivos', na_adj:'な-adjetivos' };
 
   // Session state (preserved between config ↔ session)
-  var _questions   = [];
-  var _index       = 0;
-  var _score       = 0;
-  var _answers     = [];
-  var _answered    = false;
+  var _questions       = [];
+  var _index           = 0;
+  var _score           = 0;
+  var _answers         = [];
+  var _answered        = false;
+  var _resultRecorded  = false;
   var _selCats     = ['verb','noun','i_adj','na_adj'];
   var _selForms    = ['pres','neg','past','past-neg'];
   var _direction   = 'polite-to-plain';
@@ -133,7 +134,7 @@ var GrammarView = (function () {
         Toast.error('Não há questões suficientes para a seleção atual.');
         return;
       }
-      _questions = qs; _index = 0; _score = 0; _answers = [];
+      _questions = qs; _index = 0; _score = 0; _answers = []; _resultRecorded = false;
       _renderSession(container);
     });
   }
@@ -441,7 +442,7 @@ var GrammarView = (function () {
 
       var isCorrect = (chosenIdx === q.correct);
       if (isCorrect) _score++;
-      _answers.push({ itemId: q.itemId, form: q.form, chosen: chosenIdx, correct: q.correct, isCorrect: isCorrect });
+      _answers.push({ qIdx: _index, itemId: q.itemId, form: q.form, chosen: chosenIdx, correct: q.correct, isCorrect: isCorrect });
 
       optionsEl.querySelectorAll('.quiz-option').forEach(function (btn) {
         btn.classList.add('answered');
@@ -487,11 +488,14 @@ var GrammarView = (function () {
     var pct   = total ? Math.round((_score / total) * 100) : 0;
     var emoji = pct === 100 ? '🏆' : pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '💪';
 
-    var wrongItems = _answers.filter(function (a) { return !a.isCorrect; }).map(function (a) {
-      var q = null;
-      for (var i = 0; i < _questions.length; i++) {
-        if (_questions[i].itemId === a.itemId && _questions[i].form === a.form) { q = _questions[i]; break; }
-      }
+    if (!_resultRecorded) {
+      KanjiStorage.recordGrammarQuiz('Formas Polida e Informal', _score, total);
+      _resultRecorded = true;
+    }
+
+    var wrongAnswers = _answers.filter(function (a) { return !a.isCorrect; });
+    var wrongItems   = wrongAnswers.map(function (a) {
+      var q = _questions[a.qIdx];
       if (!q) return '';
       return '<div class="wrong-item">' +
         '<div class="wi-kanji" style="font-size:1.1rem;min-width:unset;padding-right:8px">' + q.stimulus + '</div>' +
@@ -516,6 +520,9 @@ var GrammarView = (function () {
           : '') +
         '<div class="qr-actions">' +
           '<button class="btn btn-primary btn-lg" id="btn-redo">🔁 Refazer</button>' +
+          (wrongAnswers.length > 0
+            ? '<button class="btn btn-secondary" id="btn-review-gr">📚 Rever erros (' + wrongAnswers.length + ')</button>'
+            : '') +
           '<button class="btn btn-ghost" id="btn-back-gr">← Voltar</button>' +
         '</div>' +
       '</div>';
@@ -525,8 +532,18 @@ var GrammarView = (function () {
       _shuffle(_questions);
       _renderSession(container);
     });
+    var reviewBtn = container.querySelector('#btn-review-gr');
+    if (reviewBtn) reviewBtn.addEventListener('click', function () {
+      var seen = {};
+      var wrongQs = wrongAnswers
+        .filter(function (a) { if (seen[a.qIdx]) return false; seen[a.qIdx] = true; return true; })
+        .map(function (a) { return _questions[a.qIdx]; })
+        .filter(Boolean);
+      _questions = wrongQs; _index = 0; _score = 0; _answers = [];
+      _renderSession(container);
+    });
     container.querySelector('#btn-back-gr').addEventListener('click', function () {
-      _index = 0; _score = 0; _answers = []; _questions = [];
+      _index = 0; _score = 0; _answers = []; _questions = []; _resultRecorded = false;
       _renderConfig(container);
     });
     KanjiApp.setKeyHandler(null);

@@ -4,12 +4,13 @@
 
 var ParticlesView = (function () {
 
-  var _questions = [];
-  var _index     = 0;
-  var _score     = 0;
-  var _answers   = [];
-  var _answered  = false;
-  var _count     = 20;
+  var _questions      = [];
+  var _index          = 0;
+  var _score          = 0;
+  var _answers        = [];
+  var _answered       = false;
+  var _count          = 20;
+  var _resultRecorded = false;
 
   function render(container, params) {
     var sub = params[1] || '';
@@ -57,7 +58,7 @@ var ParticlesView = (function () {
         Toast.error('Dados de partículas não encontrados.');
         return;
       }
-      _index = 0; _score = 0; _answers = []; _answered = false;
+      _index = 0; _score = 0; _answers = []; _answered = false; _resultRecorded = false;
       _renderSession(container);
     });
   }
@@ -161,6 +162,7 @@ var ParticlesView = (function () {
       var isCorrect = (chosenIdx === correctIdx);
       if (isCorrect) _score++;
       _answers.push({
+        qIdx:      _index,
         id:        q.id,
         sentence:  q.sentence,
         meaning:   q.meaning,
@@ -219,7 +221,13 @@ var ParticlesView = (function () {
     var pct   = total ? Math.round((_score / total) * 100) : 0;
     var emoji = pct === 100 ? '🏆' : pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '💪';
 
-    var wrongHTML = _answers.filter(function (a) { return !a.isCorrect; }).map(function (a) {
+    if (!_resultRecorded) {
+      KanjiStorage.recordGrammarQuiz('Partículas', _score, total);
+      _resultRecorded = true;
+    }
+
+    var wrongAnswers = _answers.filter(function (a) { return !a.isCorrect; });
+    var wrongHTML    = wrongAnswers.map(function (a) {
       var displayed = a.sentence.replace('___',
         '<span style="color:var(--danger);font-weight:700">' + a.chosen + '</span>');
       var corrected = a.sentence.replace('___',
@@ -245,6 +253,9 @@ var ParticlesView = (function () {
           : '') +
         '<div class="qr-actions">' +
           '<button class="btn btn-primary btn-lg" id="btn-redo-pt">🔁 Refazer</button>' +
+          (wrongAnswers.length > 0
+            ? '<button class="btn btn-secondary" id="btn-review-pt">📚 Rever erros (' + wrongAnswers.length + ')</button>'
+            : '') +
           '<button class="btn btn-ghost" id="btn-back-pt">← Voltar</button>' +
         '</div>' +
       '</div>';
@@ -254,8 +265,18 @@ var ParticlesView = (function () {
       _shuffle(_questions);
       _renderSession(container);
     });
+    var reviewBtn = container.querySelector('#btn-review-pt');
+    if (reviewBtn) reviewBtn.addEventListener('click', function () {
+      var seen = {};
+      var wrongQs = wrongAnswers
+        .filter(function (a) { if (seen[a.qIdx]) return false; seen[a.qIdx] = true; return true; })
+        .map(function (a) { return _questions[a.qIdx]; })
+        .filter(Boolean);
+      _questions = wrongQs; _index = 0; _score = 0; _answers = [];
+      _renderSession(container);
+    });
     container.querySelector('#btn-back-pt').addEventListener('click', function () {
-      _index = 0; _score = 0; _answers = []; _questions = [];
+      _index = 0; _score = 0; _answers = []; _questions = []; _resultRecorded = false;
       _renderConfig(container);
     });
     KanjiApp.setKeyHandler(null);

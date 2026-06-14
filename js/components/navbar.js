@@ -6,6 +6,18 @@ var Navbar = (function () {
 
   var _drawerOpen = false;
 
+  var PATH_TITLES = {
+    '/':             'Início',
+    '/browse':       'Navegar',
+    '/kanji':        'Kanji',
+    '/flashcard':    'Flashcards',
+    '/quiz':         'Quiz',
+    '/grammar':      'Formas Polida e Informal',
+    '/particles':    'Partículas',
+    '/transitivity': 'Transitivo e Intransitivo',
+    '/theory':       'Teoria',
+  };
+
   // ---- Sidebar items (desktop) ----
   var SIDEBAR_ITEMS = [
     { type: 'item',    path: '/',          icon: '🏠', label: 'Início' },
@@ -73,7 +85,7 @@ var Navbar = (function () {
     el.innerHTML =
       '<div class="top-bar-logo">' +
         '<span class="top-bar-kanji">漢</span>' +
-        '<span class="top-bar-title">Nihongo Progressive</span>' +
+        '<span class="top-bar-title" id="top-bar-title">Nihongo Progressive</span>' +
       '</div>' +
       '<button class="hamburger-btn" id="hamburger-btn" aria-label="Abrir menu">☰</button>';
 
@@ -206,6 +218,19 @@ var Navbar = (function () {
       var active = (navPath === '/' ? path === '/' : path.startsWith(navPath));
       el.classList.toggle('active', active);
     });
+
+    // Top bar title (mobile)
+    var titleEl = document.getElementById('top-bar-title');
+    if (titleEl) {
+      var title = 'Nihongo Progressive';
+      if (path !== '/') {
+        var keys = Object.keys(PATH_TITLES).filter(function (k) { return k !== '/'; });
+        for (var i = 0; i < keys.length; i++) {
+          if (path.startsWith(keys[i])) { title = PATH_TITLES[keys[i]]; break; }
+        }
+      }
+      titleEl.textContent = title;
+    }
   }
 
   function updateProgress() {

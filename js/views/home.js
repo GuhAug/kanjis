@@ -7,7 +7,8 @@ var HomeView = (function () {
   var _chart = null;
 
   function render(container) {
-    var stats = KanjiStorage.getStats();
+    var stats          = KanjiStorage.getStats();
+    var grammarHistory = KanjiStorage.getGrammarHistory();
 
     container.innerHTML =
       '<div class="view-enter">' +
@@ -25,12 +26,18 @@ var HomeView = (function () {
           _statCard('📝', (stats.quizHistory.length > 0 ? stats.quizHistory[0].score + '/' + stats.quizHistory[0].total : '—'), 'Último quiz') +
         '</div>' +
 
-        '<div class="section-title">Atalhos</div>' +
+        '<div class="section-title">Atalhos — Kanji</div>' +
         '<div class="home-cta-grid">' +
-          _ctaCard('📚', 'Navegar Kanji', 'Explore por nível e capítulo', '/browse') +
+          _ctaCard('📚', 'Navegar', 'Explore por nível e capítulo', '/browse') +
           _ctaCard('🃏', 'Flashcards', 'Pratique com virada de cartas', '/flashcard') +
-          _ctaCard('✏️', 'Quiz de Kanji', 'Teste seus conhecimentos', '/quiz') +
-          _ctaCard('🔀', 'Formas Polida e Informal', 'Pratique conjugações e flexões', '/grammar') +
+          _ctaCard('✏️', 'Quiz', 'Teste seus conhecimentos', '/quiz') +
+        '</div>' +
+
+        '<div class="section-title">Atalhos — Gramática</div>' +
+        '<div class="home-cta-grid">' +
+          _ctaCard('🔀', 'Formas Polida e Informal', 'Polido ↔ Informal', '/grammar') +
+          _ctaCard('🧩', 'Partículas', 'Escolha a partícula correta', '/particles') +
+          _ctaCard('↔️', 'Transitivo e Intransitivo', '他動詞 vs 自動詞', '/transitivity') +
           _ctaCard('📖', 'Teoria', 'Aprenda sobre o sistema de escrita', '/theory') +
         '</div>' +
 
@@ -38,8 +45,12 @@ var HomeView = (function () {
         _renderLevelProgress(stats) +
 
         (stats.quizHistory.length > 0 ?
-          '<div class="section-title mt-24">Histórico de quizzes</div>' +
+          '<div class="section-title mt-24">Histórico — Kanji</div>' +
           _renderQuizHistory(stats.quizHistory) : '') +
+
+        (grammarHistory.length > 0 ?
+          '<div class="section-title mt-24">Histórico — Gramática</div>' +
+          _renderQuizHistory(grammarHistory) : '') +
 
         '<div class="divider"></div>' +
         '<div class="flex-gap flex-wrap">' +
