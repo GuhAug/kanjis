@@ -20,6 +20,7 @@ var KanjiApp = (function () {
     { pattern: /^\/quiz(\/.*)?$/,             view: QuizView },
     { pattern: /^\/grammar(\/\w+)?$/,         view: GrammarView },
     { pattern: /^\/particles(\/.*)?$/,        view: ParticlesView },
+    { pattern: /^\/transitivity(\/.*)?$/,     view: TransitivityView },
   ];
 
   function _resolve(path) {
