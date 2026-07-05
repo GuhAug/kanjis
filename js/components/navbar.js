@@ -9,6 +9,7 @@ var Navbar = (function () {
   function _getSidebarItems() {
     return [
       { type: 'item',    path: '/',             icon: '🏠', label: Lang.t('nav_home') },
+      { type: 'item',    path: '/theory',       icon: '📖', label: Lang.t('nav_theory') },
       { type: 'section', label: Lang.t('nav_section_kanji') },
       { type: 'item',    path: '/browse',       icon: '📚', label: Lang.t('nav_browse') },
       { type: 'item',    path: '/flashcard',    icon: '🃏', label: Lang.t('nav_flashcard') },
@@ -17,13 +18,13 @@ var Navbar = (function () {
       { type: 'item',    path: '/grammar',      icon: '🔀', label: Lang.t('nav_grammar') },
       { type: 'item',    path: '/particles',    icon: '🧩', label: Lang.t('nav_particles') },
       { type: 'item',    path: '/transitivity', icon: '↔️', label: Lang.t('nav_transitivity') },
-      { type: 'item',    path: '/theory',       icon: '📖', label: Lang.t('nav_theory') },
     ];
   }
 
   function _getDrawerStructure() {
     return [
-      { type: 'item', path: '/', icon: '🏠', label: Lang.t('nav_home') },
+      { type: 'item', path: '/',       icon: '🏠', label: Lang.t('nav_home') },
+      { type: 'item', path: '/theory', icon: '📖', label: Lang.t('nav_theory') },
       {
         type: 'section', label: Lang.t('nav_section_kanji'),
         items: [
@@ -40,7 +41,6 @@ var Navbar = (function () {
           { path: '/transitivity', icon: '↔️', label: Lang.t('nav_transitivity') },
         ]
       },
-      { type: 'item', path: '/theory', icon: '📖', label: Lang.t('nav_theory') },
     ];
   }
 
