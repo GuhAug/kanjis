@@ -92,12 +92,15 @@ var Navbar = (function () {
         '<span class="top-bar-title" id="top-bar-title">Nihongo Progressive</span>' +
       '</div>' +
       '<div class="top-bar-right">' +
-        '<button class="lang-toggle" id="lang-toggle-top" aria-label="Switch language">' + Lang.t('lang_toggle') + '</button>' +
+        _langSwitcherHTML('top') +
         '<button class="hamburger-btn" id="hamburger-btn" aria-label="Abrir menu">☰</button>' +
       '</div>';
 
     document.getElementById('hamburger-btn').addEventListener('click', _openDrawer);
-    document.getElementById('lang-toggle-top').addEventListener('click', _onLangToggle);
+    document.getElementById('lang-sw-top').addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-lang]');
+      if (btn) _onLangSelect(btn.dataset.lang);
+    });
   }
 
   function renderDrawer() {
@@ -200,7 +203,7 @@ var Navbar = (function () {
       '</div>' +
       '<nav class="sidebar-nav">' + items + '</nav>' +
       '<div class="sidebar-lang">' +
-        '<button class="lang-toggle" id="lang-toggle-sidebar">' + Lang.t('lang_toggle') + '</button>' +
+        _langSwitcherHTML('sidebar') +
       '</div>' +
       '<div class="sidebar-progress">' +
         '<div class="prog-label">' +
@@ -213,17 +216,24 @@ var Navbar = (function () {
       '</div>';
 
     el.addEventListener('click', function (e) {
-      var item = e.target.closest('[data-nav]');
-      if (item) KanjiApp.navigate(item.dataset.nav);
+      var navItem = e.target.closest('[data-nav]');
+      if (navItem) KanjiApp.navigate(navItem.dataset.nav);
+      var langBtn = e.target.closest('[data-lang]');
+      if (langBtn) _onLangSelect(langBtn.dataset.lang);
     });
-
-    var langBtn = el.querySelector('#lang-toggle-sidebar');
-    if (langBtn) langBtn.addEventListener('click', _onLangToggle);
   }
 
-  function _onLangToggle() {
-    var newLang = Lang.get() === 'pt' ? 'en' : 'pt';
-    Lang.set(newLang);
+  function _langSwitcherHTML(id) {
+    var cur = Lang.get();
+    return '<div class="lang-switcher" id="lang-sw-' + id + '">' +
+      '<button class="ls-opt' + (cur === 'pt' ? ' active' : '') + '" data-lang="pt">PT</button>' +
+      '<button class="ls-opt' + (cur === 'en' ? ' active' : '') + '" data-lang="en">EN</button>' +
+    '</div>';
+  }
+
+  function _onLangSelect(lang) {
+    if (Lang.get() === lang) return;
+    Lang.set(lang);
     refreshLang();
     KanjiApp.rerender();
   }
