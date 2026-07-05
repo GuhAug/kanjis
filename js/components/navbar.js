@@ -93,7 +93,8 @@ var Navbar = (function () {
       '</div>' +
       '<div class="top-bar-right">' +
         _langSwitcherHTML('top') +
-        '<button class="hamburger-btn" id="hamburger-btn" aria-label="Abrir menu">☰</button>' +
+        '<button class="theme-btn" id="theme-btn-top" title="Toggle theme">' + _themeIcon() + '</button>' +
+        '<button class="hamburger-btn" id="hamburger-btn" aria-label="Menu">☰</button>' +
       '</div>';
 
     document.getElementById('hamburger-btn').addEventListener('click', _openDrawer);
@@ -101,6 +102,7 @@ var Navbar = (function () {
       var btn = e.target.closest('[data-lang]');
       if (btn) _onLangSelect(btn.dataset.lang);
     });
+    document.getElementById('theme-btn-top').addEventListener('click', _onThemeToggle);
   }
 
   function renderDrawer() {
@@ -204,6 +206,7 @@ var Navbar = (function () {
       '<nav class="sidebar-nav">' + items + '</nav>' +
       '<div class="sidebar-lang">' +
         _langSwitcherHTML('sidebar') +
+        '<button class="theme-btn" id="theme-btn-sidebar" title="Toggle theme">' + _themeIcon() + '</button>' +
       '</div>' +
       '<div class="sidebar-progress">' +
         '<div class="prog-label">' +
@@ -221,6 +224,13 @@ var Navbar = (function () {
       var langBtn = e.target.closest('[data-lang]');
       if (langBtn) _onLangSelect(langBtn.dataset.lang);
     });
+
+    var themeBtn = el.querySelector('#theme-btn-sidebar');
+    if (themeBtn) themeBtn.addEventListener('click', _onThemeToggle);
+  }
+
+  function _themeIcon() {
+    return Theme.get() === 'dark' ? '☀️' : '🌙';
   }
 
   function _langSwitcherHTML(id) {
@@ -236,6 +246,15 @@ var Navbar = (function () {
     Lang.set(lang);
     refreshLang();
     KanjiApp.rerender();
+  }
+
+  function _onThemeToggle() {
+    Theme.toggle();
+    var icon = _themeIcon();
+    var topBtn  = document.getElementById('theme-btn-top');
+    var sideBtn = document.getElementById('theme-btn-sidebar');
+    if (topBtn)  topBtn.textContent  = icon;
+    if (sideBtn) sideBtn.textContent = icon;
   }
 
   function refreshLang() {

@@ -1,42 +1,98 @@
 /* ============================================================
-   ROOT VARIABLES
+   ROOT VARIABLES — dark mode (default) — Japanese palette
    ============================================================ */
 :root {
-  --bg:           #0f0f13;
-  --surface:      #1a1a24;
-  --surface2:     #242433;
-  --surface3:     #2e2e42;
-  --border:       #2e2e42;
-  --border2:      #3a3a52;
-  --accent:       #7c6aff;
-  --accent-dim:   #5a4acc;
-  --accent-glow:  rgba(124, 106, 255, 0.2);
-  --accent2:      #a78bfa;
-  --success:      #4ade80;
-  --success-dim:  rgba(74, 222, 128, 0.15);
-  --danger:       #f87171;
-  --danger-dim:   rgba(248, 113, 113, 0.15);
-  --warning:      #fbbf24;
-  --warning-dim:  rgba(251, 191, 36, 0.15);
-  --text:         #e8e8f0;
-  --text-muted:   #8888aa;
-  --text-faint:   #55556a;
+  /* Sumi ink backgrounds */
+  --bg:           #0d0b10;
+  --surface:      #1b1720;
+  --surface2:     #261f2e;
+  --surface3:     #322840;
+  --border:       #3e3050;
+  --border2:      #504062;
 
-  --level-1:      #60a5fa;
-  --level-1-dim:  rgba(96, 165, 250, 0.15);
-  --level-2:      #4ade80;
-  --level-2-dim:  rgba(74, 222, 128, 0.15);
-  --level-3:      #fbbf24;
-  --level-3-dim:  rgba(251, 191, 36, 0.15);
-  --level-4:      #f87171;
-  --level-4-dim:  rgba(248, 113, 113, 0.15);
+  /* Shu vermillion — torii red */
+  --accent:       #c44432;
+  --accent-dim:   #8c2e22;
+  --accent-glow:  rgba(196, 68, 50, 0.22);
+
+  /* Sakura pink */
+  --accent2:      #e07898;
+
+  /* Matcha green */
+  --success:      #5aaa78;
+  --success-dim:  rgba(90, 170, 120, 0.15);
+
+  /* Aka red */
+  --danger:       #e05252;
+  --danger-dim:   rgba(224, 82, 82, 0.15);
+
+  /* Kincha gold */
+  --warning:      #c99038;
+  --warning-dim:  rgba(201, 144, 56, 0.15);
+
+  /* Washi cream text */
+  --text:         #ede6f2;
+  --text-muted:   #8a7a9e;
+  --text-faint:   #564e68;
+
+  /* Level colors */
+  --level-1:      #64aee0;   /* ai-iro indigo */
+  --level-1-dim:  rgba(100, 174, 224, 0.15);
+  --level-2:      #5aaa78;   /* matcha */
+  --level-2-dim:  rgba(90, 170, 120, 0.15);
+  --level-3:      #c99038;   /* kincha gold */
+  --level-3-dim:  rgba(201, 144, 56, 0.15);
+  --level-4:      #e05252;   /* aka */
+  --level-4-dim:  rgba(224, 82, 82, 0.15);
 
   --sidebar-w:    240px;
   --radius:       12px;
   --radius-sm:    8px;
   --radius-lg:    16px;
-  --shadow:       0 4px 24px rgba(0,0,0,0.4);
+  --shadow:       0 4px 24px rgba(0,0,0,0.5);
   --transition:   150ms ease;
+}
+
+/* ============================================================
+   LIGHT MODE — washi paper + sumi ink
+   ============================================================ */
+[data-theme="light"] {
+  --bg:           #f4ede3;
+  --surface:      #fffcf8;
+  --surface2:     #ede4d8;
+  --surface3:     #e0d5c6;
+  --border:       #cfc4b4;
+  --border2:      #bbb09e;
+
+  --accent:       #c44432;
+  --accent-dim:   #a03828;
+  --accent-glow:  rgba(196, 68, 50, 0.12);
+
+  --accent2:      #b03055;
+
+  --success:      #2d7d4e;
+  --success-dim:  rgba(45, 125, 78, 0.12);
+
+  --danger:       #c03030;
+  --danger-dim:   rgba(192, 48, 48, 0.12);
+
+  --warning:      #966618;
+  --warning-dim:  rgba(150, 102, 24, 0.12);
+
+  --text:         #1a1410;
+  --text-muted:   #5e5040;
+  --text-faint:   #9a8e7e;
+
+  --level-1:      #1a5ea0;
+  --level-1-dim:  rgba(26, 94, 160, 0.12);
+  --level-2:      #2d7d4e;
+  --level-2-dim:  rgba(45, 125, 78, 0.12);
+  --level-3:      #966618;
+  --level-3-dim:  rgba(150, 102, 24, 0.12);
+  --level-4:      #c03030;
+  --level-4-dim:  rgba(192, 48, 48, 0.12);
+
+  --shadow:       0 4px 24px rgba(0,0,0,0.10);
 }
 
 /* ============================================================
@@ -322,10 +378,13 @@ select option { background: var(--surface2); }
 .sidebar-lang {
   padding: 10px 16px;
   border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .sidebar-lang .lang-switcher {
-  width: 100%;
+  flex: 1;
 }
 
 .sidebar-lang .ls-opt {
@@ -333,6 +392,32 @@ select option { background: var(--surface2); }
   padding: 7px 0;
   font-size: 0.78rem;
   text-align: center;
+}
+
+.theme-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border2);
+  border-radius: 50%;
+  background: var(--surface2);
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--transition), transform var(--transition);
+  line-height: 1;
+}
+.theme-btn:hover {
+  background: var(--surface3);
+  transform: rotate(15deg);
+}
+
+.top-bar-right .theme-btn {
+  width: 32px;
+  height: 32px;
+  font-size: 0.95rem;
 }
 
 /* ============================================================
