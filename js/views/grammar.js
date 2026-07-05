@@ -4,24 +4,43 @@
 
 var GrammarView = (function () {
 
-  var FORM_LABELS = {
-    pres:       'Presente',
-    neg:        'Negativo',
-    past:       'Passado',
-    'past-neg': 'Pass. Negativo',
-    te:         'Forma-て',
-  };
+  function _getFormLabels() {
+    return {
+      pres:       Lang.t('grammar_form_pres'),
+      neg:        Lang.t('grammar_form_neg'),
+      past:       Lang.t('grammar_form_past'),
+      'past-neg': Lang.t('grammar_form_past_neg'),
+      te:         Lang.t('grammar_form_te'),
+    };
+  }
 
-  var FORM_FULL = {
-    pres:       'Presente (afirmativo)',
-    neg:        'Negativo (presente)',
-    past:       'Passado (afirmativo)',
-    'past-neg': 'Passado (negativo)',
-    te:         'Forma-て',
-  };
+  function _getFormFull() {
+    return {
+      pres:       Lang.t('grammar_form_pres_full'),
+      neg:        Lang.t('grammar_form_neg_full'),
+      past:       Lang.t('grammar_form_past_full'),
+      'past-neg': Lang.t('grammar_form_past_neg_full'),
+      te:         Lang.t('grammar_form_te_full'),
+    };
+  }
 
-  var CAT_SHORT = { verb:'Verbos', noun:'Subst.', i_adj:'い-adj', na_adj:'な-adj' };
-  var CAT_FULL  = { verb:'Verbos', noun:'Substantivos', i_adj:'い-adjetivos', na_adj:'な-adjetivos' };
+  function _getCatShort() {
+    return {
+      verb:   Lang.t('grammar_cat_verb'),
+      noun:   Lang.t('grammar_cat_noun'),
+      i_adj:  Lang.t('grammar_cat_i_adj'),
+      na_adj: Lang.t('grammar_cat_na_adj'),
+    };
+  }
+
+  function _getCatFull() {
+    return {
+      verb:   Lang.t('grammar_cat_verb_full'),
+      noun:   Lang.t('grammar_cat_noun_full'),
+      i_adj:  Lang.t('grammar_cat_i_adj_full'),
+      na_adj: Lang.t('grammar_cat_na_adj_full'),
+    };
+  }
 
   // Session state (preserved between config ↔ session)
   var _questions       = [];
@@ -50,46 +69,46 @@ var GrammarView = (function () {
     var allCats  = ['verb','noun','i_adj','na_adj'];
 
     function chips(items, selected, attr) {
+      var labels = (attr === 'cat') ? _getCatShort() : _getFormLabels();
       return items.map(function (v) {
-        var lbl = (attr === 'cat') ? CAT_SHORT[v] : FORM_LABELS[v];
         var sel = selected.indexOf(v) !== -1 ? ' selected' : '';
-        return '<div class="filter-chip' + sel + '" data-' + attr + '="' + v + '">' + lbl + '</div>';
+        return '<div class="filter-chip' + sel + '" data-' + attr + '="' + v + '">' + labels[v] + '</div>';
       }).join('');
     }
 
     container.innerHTML =
       '<div class="view-enter">' +
         '<div class="page-header">' +
-          '<h1>🔀 Formas Polida e Informal</h1>' +
-          '<p>Pratique a transformação entre formas polidas (丁寧語) e informais (普通体).</p>' +
+          '<h1>' + Lang.t('grammar_title') + '</h1>' +
+          '<p>' + Lang.t('grammar_subtitle') + '</p>' +
         '</div>' +
         '<div class="grammar-config card">' +
           '<div class="field">' +
-            '<label>Categoria <span class="field-hint">(uma ou mais)</span></label>' +
+            '<label>' + Lang.t('grammar_cat') + ' <span class="field-hint">' + Lang.t('grammar_cat_hint') + '</span></label>' +
             '<div class="chip-group" id="gr-cats">' + chips(allCats, _selCats, 'cat') + '</div>' +
           '</div>' +
           '<div class="field">' +
-            '<label>Formas a praticar <span class="field-hint">(uma ou mais)</span></label>' +
+            '<label>' + Lang.t('grammar_forms') + ' <span class="field-hint">' + Lang.t('grammar_forms_hint') + '</span></label>' +
             '<div class="chip-group" id="gr-forms">' + chips(allForms, _selForms, 'form') + '</div>' +
           '</div>' +
           '<div class="field">' +
-            '<label>Direção</label>' +
+            '<label>' + Lang.t('grammar_direction') + '</label>' +
             '<div class="chip-group" id="gr-dir">' +
-              '<div class="filter-chip' + (_direction === 'polite-to-plain' ? ' selected' : '') + '" data-dir="polite-to-plain">Polido → Informal</div>' +
-              '<div class="filter-chip' + (_direction === 'plain-to-polite' ? ' selected' : '') + '" data-dir="plain-to-polite">Informal → Polido</div>' +
+              '<div class="filter-chip' + (_direction === 'polite-to-plain' ? ' selected' : '') + '" data-dir="polite-to-plain">' + Lang.t('grammar_pol_to_pl') + '</div>' +
+              '<div class="filter-chip' + (_direction === 'plain-to-polite' ? ' selected' : '') + '" data-dir="plain-to-polite">' + Lang.t('grammar_pl_to_pol') + '</div>' +
             '</div>' +
           '</div>' +
           '<div class="field">' +
-            '<label>Número de questões</label>' +
+            '<label>' + Lang.t('grammar_count') + '</label>' +
             '<select id="gr-count">' +
-              '<option value="10"' + (_count === 10 ? ' selected' : '') + '>10 questões</option>' +
-              '<option value="20"' + (_count === 20 ? ' selected' : '') + '>20 questões</option>' +
-              '<option value="0"'  + (_count === 0  ? ' selected' : '') + '>Todas</option>' +
+              '<option value="10"' + (_count === 10 ? ' selected' : '') + '>10</option>' +
+              '<option value="20"' + (_count === 20 ? ' selected' : '') + '>20</option>' +
+              '<option value="0"'  + (_count === 0  ? ' selected' : '') + '>' + Lang.t('quiz_all') + '</option>' +
             '</select>' +
           '</div>' +
           '<div class="gr-config-actions">' +
-            '<button class="btn btn-ghost" id="btn-gr-theory">📖 Ver Teoria</button>' +
-            '<button class="btn btn-primary btn-lg" id="btn-start-gr">Iniciar Prática</button>' +
+            '<button class="btn btn-ghost" id="btn-gr-theory">' + Lang.t('grammar_theory_btn') + '</button>' +
+            '<button class="btn btn-primary btn-lg" id="btn-start-gr">' + Lang.t('grammar_start') + '</button>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -126,12 +145,12 @@ var GrammarView = (function () {
 
     container.querySelector('#btn-start-gr').addEventListener('click', function () {
       if (!_selCats.length || !_selForms.length) {
-        Toast.error('Selecione pelo menos uma categoria e uma forma.');
+        Toast.error(Lang.t('grammar_select_err'));
         return;
       }
       var qs = _buildQuestions(_selCats, _selForms, _direction, _count);
       if (!qs.length) {
-        Toast.error('Não há questões suficientes para a seleção atual.');
+        Toast.error(Lang.t('grammar_no_qs'));
         return;
       }
       _questions = qs; _index = 0; _score = 0; _answers = []; _resultRecorded = false;
@@ -142,18 +161,19 @@ var GrammarView = (function () {
   // ── Theory ──────────────────────────────────────────────
 
   function _renderTheory(container) {
+    var isEN = Lang.get() === 'en';
     container.innerHTML =
       '<div class="view-enter">' +
         '<div class="page-header">' +
-          '<h1>📖 Teoria — Formas Polida e Informal</h1>' +
-          '<p>Regras de transformação entre forma polida (丁寧語) e informal (普通体).</p>' +
+          '<h1>' + (isEN ? '📖 Theory — Polite and Plain Forms' : '📖 Teoria — Formas Polida e Informal') + '</h1>' +
+          '<p>' + (isEN ? 'Transformation rules between polite (丁寧語) and plain (普通体) forms.' : 'Regras de transformação entre forma polida (丁寧語) e informal (普通体).') + '</p>' +
         '</div>' +
         _theoryVerbs() +
         _theoryNouns() +
         _theoryIAdj() +
         _theoryNaAdj() +
         '<div style="text-align:center;margin-top:24px;margin-bottom:8px">' +
-          '<button class="btn btn-primary" id="btn-theory-back">← Voltar</button>' +
+          '<button class="btn btn-primary" id="btn-theory-back">' + Lang.t('grammar_back') + '</button>' +
         '</div>' +
       '</div>';
 
@@ -183,106 +203,154 @@ var GrammarView = (function () {
   }
 
   function _theoryVerbs() {
-    return '<div class="card grammar-theory-card">' +
-      '<div class="theory-cat-header">🏃 <strong>Verbos (動詞)</strong></div>' +
-      '<p class="theory-note">Grupo <strong>1</strong> = godan (〜う/く/す/つ/む/ぬ/ぶ/る/ぐ) · <strong>2</strong> = ichidan (〜る) · <strong>3</strong> = irregular (する, 来る)</p>' +
-      _tbl(
-        ['Forma', 'Polido (丁寧)', 'Informal (普通)'],
-        [
-          ['Presente',        '〜ます',               '〜る (gr.2) / vogal+う (gr.1)'],
-          ['Negativo',        '〜ません',             '〜ない'],
-          ['Passado',         '〜ました',             '〜た / 〜んだ'],
-          ['Pass. Negativo',  '〜ませんでした',       '〜なかった'],
-          ['Forma-て',        '—',                    '〜て / 〜で'],
+    var isEN = Lang.get() === 'en';
+    var cols = isEN
+      ? ['Form', 'Polite (丁寧)', 'Plain (普通)']
+      : ['Forma', 'Polido (丁寧)', 'Informal (普通)'];
+    var rows = isEN
+      ? [
+          ['Present',    '〜ます',           '〜る (gr.2) / vowel+う (gr.1)'],
+          ['Negative',   '〜ません',         '〜ない'],
+          ['Past',       '〜ました',         '〜た / 〜んだ'],
+          ['Past Neg.',  '〜ませんでした',   '〜なかった'],
+          ['て-Form',    '—',                '〜て / 〜で'],
         ]
-      ) +
+      : [
+          ['Presente',       '〜ます',           '〜る (gr.2) / vogal+う (gr.1)'],
+          ['Negativo',       '〜ません',         '〜ない'],
+          ['Passado',        '〜ました',         '〜た / 〜んだ'],
+          ['Pass. Negativo', '〜ませんでした',   '〜なかった'],
+          ['Forma-て',       '—',                '〜て / 〜で'],
+        ];
+    var teCols = isEN
+      ? ['Ending', 'Transforms to', 'Example']
+      : ['Terminação', 'Transforma em', 'Exemplo'];
+    var teRows = [
+      ['〜く',      '〜いて',  '書く → 書いて'],
+      ['〜ぐ',      '〜いで',  '泳ぐ → 泳いで'],
+      ['〜す',      '〜して',  '話す → 話して'],
+      ['〜む/ぬ/ぶ','〜んで',  '飲む → 飲んで'],
+      ['〜る/つ/う','〜って',  '帰る → 帰って, 待つ → 待って'],
+      ['行く (exc.)','行って', '—'],
+    ];
+
+    return '<div class="card grammar-theory-card">' +
+      '<div class="theory-cat-header">🏃 <strong>' + (isEN ? 'Verbs (動詞)' : 'Verbos (動詞)') + '</strong></div>' +
+      '<p class="theory-note">' + (isEN
+        ? 'Group <strong>1</strong> = godan (〜う/く/す/つ/む/ぬ/ぶ/る/ぐ) · <strong>2</strong> = ichidan (〜る) · <strong>3</strong> = irregular (する, 来る)'
+        : 'Grupo <strong>1</strong> = godan (〜う/く/す/つ/む/ぬ/ぶ/る/ぐ) · <strong>2</strong> = ichidan (〜る) · <strong>3</strong> = irregular (する, 来る)') + '</p>' +
+      _tbl(cols, rows) +
       '<div class="gr-te-table">' +
-        '<div class="gr-te-title">Regras da Forma-て (grupo 1)</div>' +
-        _tbl(
-          ['Terminação', 'Transforma em', 'Exemplo'],
-          [
-            ['〜く',     '〜いて',  '書く → 書いて'],
-            ['〜ぐ',     '〜いで',  '泳ぐ → 泳いで'],
-            ['〜す',     '〜して',  '話す → 話して'],
-            ['〜む/ぬ/ぶ','〜んで', '飲む → 飲んで'],
-            ['〜る/つ/う','〜って', '帰る → 帰って, 待つ → 待って'],
-            ['行く (exc.)','行って', '—'],
-          ]
-        ) +
+        '<div class="gr-te-title">' + (isEN ? 'て-Form Rules (group 1)' : 'Regras da Forma-て (grupo 1)') + '</div>' +
+        _tbl(teCols, teRows) +
       '</div>' +
       '<div class="theory-examples">' +
-        '<div class="gr-ex-title">Exemplos</div>' +
-        _ex('食べます', '食べる', 'comer') +
-        _ex('飲みます', '飲む',   'beber') +
-        _ex('来ます',   '来る',   'vir — irregular') +
-        _ex('します',   'する',   'fazer — irregular') +
+        '<div class="gr-ex-title">' + (isEN ? 'Examples' : 'Exemplos') + '</div>' +
+        _ex('食べます', '食べる', isEN ? 'eat'  : 'comer') +
+        _ex('飲みます', '飲む',   isEN ? 'drink' : 'beber') +
+        _ex('来ます',   '来る',   isEN ? 'come — irregular'   : 'vir — irregular') +
+        _ex('します',   'する',   isEN ? 'do/make — irregular' : 'fazer — irregular') +
       '</div>' +
     '</div>';
   }
 
   function _theoryNouns() {
-    return '<div class="card grammar-theory-card">' +
-      '<div class="theory-cat-header">📦 <strong>Substantivos (名詞) + です</strong></div>' +
-      _tbl(
-        ['Forma', 'Polido (丁寧)', 'Informal (普通)'],
-        [
-          ['Presente',        'N + です',                    'N + だ'],
-          ['Negativo',        'N + じゃありません',          'N + じゃない'],
-          ['Passado',         'N + でした',                  'N + だった'],
-          ['Pass. Negativo',  'N + じゃありませんでした',    'N + じゃなかった'],
+    var isEN = Lang.get() === 'en';
+    var cols = isEN
+      ? ['Form', 'Polite (丁寧)', 'Plain (普通)']
+      : ['Forma', 'Polido (丁寧)', 'Informal (普通)'];
+    var rows = isEN
+      ? [
+          ['Present',  'N + です',                    'N + だ'],
+          ['Negative', 'N + じゃありません',          'N + じゃない'],
+          ['Past',     'N + でした',                  'N + だった'],
+          ['Past Neg.','N + じゃありませんでした',    'N + じゃなかった'],
         ]
-      ) +
+      : [
+          ['Presente',       'N + です',                    'N + だ'],
+          ['Negativo',       'N + じゃありません',          'N + じゃない'],
+          ['Passado',        'N + でした',                  'N + だった'],
+          ['Pass. Negativo', 'N + じゃありませんでした',    'N + じゃなかった'],
+        ];
+
+    return '<div class="card grammar-theory-card">' +
+      '<div class="theory-cat-header">📦 <strong>' + (isEN ? 'Nouns (名詞) + です' : 'Substantivos (名詞) + です') + '</strong></div>' +
+      _tbl(cols, rows) +
       '<div class="theory-examples">' +
-        '<div class="gr-ex-title">Exemplos</div>' +
-        _ex('学生です',    '学生だ',    'sou estudante') +
-        _ex('先生でした',  '先生だった','era professor') +
-        _ex('学校じゃありません', '学校じゃない', 'não é escola') +
+        '<div class="gr-ex-title">' + (isEN ? 'Examples' : 'Exemplos') + '</div>' +
+        _ex('学生です',              '学生だ',       isEN ? 'I am a student'   : 'sou estudante') +
+        _ex('先生でした',            '先生だった',   isEN ? 'was a teacher'    : 'era professor') +
+        _ex('学校じゃありません',    '学校じゃない', isEN ? "it's not a school" : 'não é escola') +
       '</div>' +
     '</div>';
   }
 
   function _theoryIAdj() {
-    return '<div class="card grammar-theory-card">' +
-      '<div class="theory-cat-header">✨ <strong>い-adjetivos (い形容詞)</strong></div>' +
-      '<p class="theory-note">Exceção: <strong>いい</strong> (bom) usa a base <strong>よ</strong> nas formas modificadas → よくない / よかった / よくなかった</p>' +
-      _tbl(
-        ['Forma', 'Polido (丁寧)', 'Informal (普通)'],
-        [
-          ['Presente',        'Adj-い + です',         'Adj-い (sem です)'],
-          ['Negativo',        'Adj-くないです',        'Adj-くない'],
-          ['Passado',         'Adj-かったです',        'Adj-かった'],
-          ['Pass. Negativo',  'Adj-くなかったです',    'Adj-くなかった'],
+    var isEN = Lang.get() === 'en';
+    var cols = isEN
+      ? ['Form', 'Polite (丁寧)', 'Plain (普通)']
+      : ['Forma', 'Polido (丁寧)', 'Informal (普通)'];
+    var rows = isEN
+      ? [
+          ['Present',  'Adj-い + です',      'Adj-い (no です)'],
+          ['Negative', 'Adj-くないです',     'Adj-くない'],
+          ['Past',     'Adj-かったです',     'Adj-かった'],
+          ['Past Neg.','Adj-くなかったです', 'Adj-くなかった'],
         ]
-      ) +
+      : [
+          ['Presente',       'Adj-い + です',      'Adj-い (sem です)'],
+          ['Negativo',       'Adj-くないです',     'Adj-くない'],
+          ['Passado',        'Adj-かったです',     'Adj-かった'],
+          ['Pass. Negativo', 'Adj-くなかったです', 'Adj-くなかった'],
+        ];
+
+    return '<div class="card grammar-theory-card">' +
+      '<div class="theory-cat-header">✨ <strong>' + (isEN ? 'い-adjectives (い形容詞)' : 'い-adjetivos (い形容詞)') + '</strong></div>' +
+      '<p class="theory-note">' + (isEN
+        ? 'Exception: <strong>いい</strong> (good) uses the base <strong>よ</strong> in modified forms → よくない / よかった / よくなかった'
+        : 'Exceção: <strong>いい</strong> (bom) usa a base <strong>よ</strong> nas formas modificadas → よくない / よかった / よくなかった') + '</p>' +
+      _tbl(cols, rows) +
       '<div class="theory-examples">' +
-        '<div class="gr-ex-title">Exemplos</div>' +
-        _ex('高いです',        '高い',        'é caro') +
-        _ex('高くないです',    '高くない',    'não é caro') +
-        _ex('高かったです',    '高かった',    'era caro') +
-        _ex('いいです',        'いい',        'é bom (exceção)') +
-        _ex('よくなかったです','よくなかった','não era bom (exceção)') +
+        '<div class="gr-ex-title">' + (isEN ? 'Examples' : 'Exemplos') + '</div>' +
+        _ex('高いです',        '高い',        isEN ? "it's expensive"     : 'é caro') +
+        _ex('高くないです',    '高くない',    isEN ? "it's not expensive"  : 'não é caro') +
+        _ex('高かったです',    '高かった',    isEN ? 'it was expensive'    : 'era caro') +
+        _ex('いいです',        'いい',        isEN ? "it's good (exception)" : 'é bom (exceção)') +
+        _ex('よくなかったです','よくなかった',isEN ? 'not good (exception)' : 'não era bom (exceção)') +
       '</div>' +
     '</div>';
   }
 
   function _theoryNaAdj() {
-    return '<div class="card grammar-theory-card">' +
-      '<div class="theory-cat-header">🌸 <strong>な-adjetivos (な形容詞)</strong></div>' +
-      '<p class="theory-note">Conjugação idêntica à dos substantivos — usa だ/じゃない/だった/じゃなかった.</p>' +
-      _tbl(
-        ['Forma', 'Polido (丁寧)', 'Informal (普通)'],
-        [
-          ['Presente',        'Adj-na + です',                 'Adj-na + だ'],
-          ['Negativo',        'Adj-na + じゃありません',       'Adj-na + じゃない'],
-          ['Passado',         'Adj-na + でした',               'Adj-na + だった'],
-          ['Pass. Negativo',  'Adj-na + じゃありませんでした', 'Adj-na + じゃなかった'],
+    var isEN = Lang.get() === 'en';
+    var cols = isEN
+      ? ['Form', 'Polite (丁寧)', 'Plain (普通)']
+      : ['Forma', 'Polido (丁寧)', 'Informal (普通)'];
+    var rows = isEN
+      ? [
+          ['Present',  'Adj-na + です',                 'Adj-na + だ'],
+          ['Negative', 'Adj-na + じゃありません',       'Adj-na + じゃない'],
+          ['Past',     'Adj-na + でした',               'Adj-na + だった'],
+          ['Past Neg.','Adj-na + じゃありませんでした', 'Adj-na + じゃなかった'],
         ]
-      ) +
+      : [
+          ['Presente',       'Adj-na + です',                 'Adj-na + だ'],
+          ['Negativo',       'Adj-na + じゃありません',       'Adj-na + じゃない'],
+          ['Passado',        'Adj-na + でした',               'Adj-na + だった'],
+          ['Pass. Negativo', 'Adj-na + じゃありませんでした', 'Adj-na + じゃなかった'],
+        ];
+
+    return '<div class="card grammar-theory-card">' +
+      '<div class="theory-cat-header">🌸 <strong>' + (isEN ? 'な-adjectives (な形容詞)' : 'な-adjetivos (な形容詞)') + '</strong></div>' +
+      '<p class="theory-note">' + (isEN
+        ? 'Same conjugation as nouns — uses だ/じゃない/だった/じゃなかった.'
+        : 'Conjugação idêntica à dos substantivos — usa だ/じゃない/だった/じゃなかった.') + '</p>' +
+      _tbl(cols, rows) +
       '<div class="theory-examples">' +
-        '<div class="gr-ex-title">Exemplos</div>' +
-        _ex('元気です',       '元気だ',       'está bem/saudável') +
-        _ex('きれいでした',   'きれいだった', 'era bonito/a') +
-        _ex('好きじゃありません','好きじゃない','não gosta') +
+        '<div class="gr-ex-title">' + (isEN ? 'Examples' : 'Exemplos') + '</div>' +
+        _ex('元気です',            '元気だ',       isEN ? 'is well/healthy' : 'está bem/saudável') +
+        _ex('きれいでした',        'きれいだった', isEN ? 'was beautiful'   : 'era bonito/a') +
+        _ex('好きじゃありません',  '好きじゃない', isEN ? "doesn't like"    : 'não gosta') +
       '</div>' +
     '</div>';
   }
@@ -292,12 +360,13 @@ var GrammarView = (function () {
   function _buildQuestions(cats, forms, direction, count) {
     var data = window.GRAMMAR_DATA || [];
     var pool = data.filter(function (item) { return cats.indexOf(item.category) !== -1; });
+    var formFull = _getFormFull();
+    var catFull  = _getCatFull();
 
     var questions = [];
 
     pool.forEach(function (item) {
       forms.forEach(function (form) {
-        // te-form only for verbs
         if (form === 'te' && item.category !== 'verb') return;
 
         var f = item.forms[form];
@@ -306,15 +375,12 @@ var GrammarView = (function () {
         var isTe    = (form === 'te');
         var toPlain = isTe || direction === 'polite-to-plain';
 
-        var stimulus     = isTe ? item.dict : (toPlain ? f.polite : f.plain);
+        var stimulus      = isTe ? item.dict : (toPlain ? f.polite : f.plain);
         var correctAnswer = toPlain ? f.plain : f.polite;
         if (!stimulus || !correctAnswer) return;
 
-        var stimLabel = CAT_FULL[item.category] + ' — ' + FORM_FULL[form];
+        var stimLabel = catFull[item.category] + ' — ' + formFull[form];
 
-        // Distractors: other tenses of the SAME word.
-        // For te-form questions the stimulus IS the plain present, so skip 'pres' to avoid
-        // showing the exact same form as both stimulus and option.
         var distFormKeys = isTe
           ? ['neg', 'past', 'past-neg']
           : ['pres', 'neg', 'past', 'past-neg'].filter(function (k) { return k !== form; });
@@ -327,7 +393,6 @@ var GrammarView = (function () {
           if (val && val !== correctAnswer) distractors.push(val);
         });
 
-        // Fallback: if same-word forms aren't enough (e.g. sparse category), use other words
         if (distractors.length < 3) {
           pool.forEach(function (other) {
             if (other.id === item.id) return;
@@ -362,7 +427,7 @@ var GrammarView = (function () {
           correctAnswer: correctAnswer,
           polite:        isTe ? null : f.polite,
           plain:         f.plain,
-          formFull:      FORM_FULL[form],
+          formFull:      formFull[form],
         });
       });
     });
@@ -391,12 +456,16 @@ var GrammarView = (function () {
     _answered = false;
     var q   = _questions[_index];
     var pct = Math.round((_index / _questions.length) * 100);
+    var isEN = Lang.get() === 'en';
 
     var dirHint = q.form === 'te'
-      ? 'Qual é a forma-て deste verbo?'
+      ? (isEN ? 'What is the て-form of this verb?' : 'Qual é a forma-て deste verbo?')
       : (_direction === 'polite-to-plain'
-          ? 'Transforme para a forma <strong>informal</strong>:'
-          : 'Transforme para a forma <strong>polida</strong>:');
+          ? (isEN ? 'Transform to the <strong>plain</strong> form:' : 'Transforme para a forma <strong>informal</strong>:')
+          : (isEN ? 'Transform to the <strong>polite</strong> form:' : 'Transforme para a forma <strong>polida</strong>:'));
+
+    var politeLabel = isEN ? 'Polite:' : 'Polido:';
+    var plainLabel  = isEN ? 'Plain:'  : 'Informal:';
 
     container.innerHTML =
       '<div class="view-enter quiz-session">' +
@@ -419,14 +488,14 @@ var GrammarView = (function () {
         '<div class="quiz-feedback" id="qz-feedback">' +
           '<div class="qf-result" id="qf-result"></div>' +
           '<div class="gr-explanation" id="gr-exp" style="display:none">' +
-            (q.polite ? '<div class="gr-exp-row"><span class="gr-exp-lbl">Polido:</span> <span class="gr-exp-val">' + q.polite + '</span></div>' : '') +
-            '<div class="gr-exp-row"><span class="gr-exp-lbl">Informal:</span> <span class="gr-exp-val">' + q.plain + '</span></div>' +
+            (q.polite ? '<div class="gr-exp-row"><span class="gr-exp-lbl">' + politeLabel + '</span> <span class="gr-exp-val">' + q.polite + '</span></div>' : '') +
+            '<div class="gr-exp-row"><span class="gr-exp-lbl">' + plainLabel + '</span> <span class="gr-exp-val">' + q.plain + '</span></div>' +
           '</div>' +
         '</div>' +
 
-        '<button class="btn btn-primary quiz-next-btn hidden" id="qz-next">Próxima →</button>' +
+        '<button class="btn btn-primary quiz-next-btn hidden" id="qz-next">' + Lang.t('grammar_next') + '</button>' +
         '<div style="text-align:center;margin-top:12px">' +
-          '<button class="btn btn-ghost" id="gr-exit" style="font-size:0.85rem;opacity:0.6">✕ Sair</button>' +
+          '<button class="btn btn-ghost" id="gr-exit" style="font-size:0.85rem;opacity:0.6">' + Lang.t('grammar_exit') + '</button>' +
         '</div>' +
       '</div>';
 
@@ -447,14 +516,14 @@ var GrammarView = (function () {
       optionsEl.querySelectorAll('.quiz-option').forEach(function (btn) {
         btn.classList.add('answered');
         var idx = parseInt(btn.dataset.idx);
-        if (idx === q.correct)                  btn.classList.add('correct');
+        if (idx === q.correct)                    btn.classList.add('correct');
         else if (idx === chosenIdx && !isCorrect) btn.classList.add('wrong');
       });
 
       feedbackEl.classList.add('show', isCorrect ? 'correct-fb' : 'wrong-fb');
       resultEl.textContent = isCorrect
-        ? '✅ Correto!'
-        : '❌ Errado. Resposta correta: ' + q.correctAnswer;
+        ? Lang.t('grammar_correct')
+        : Lang.t('grammar_wrong_prefix') + q.correctAnswer;
       expEl.style.display = 'block';
       nextBtn.classList.remove('hidden');
 
@@ -501,7 +570,7 @@ var GrammarView = (function () {
         '<div class="wi-kanji" style="font-size:1.1rem;min-width:unset;padding-right:8px">' + q.stimulus + '</div>' +
         '<div class="wi-info">' +
           '<div class="wi-correct">' + q.correctAnswer + '</div>' +
-          '<div class="wi-yours">Sua resposta: ' + q.options[a.chosen] + '</div>' +
+          '<div class="wi-yours">' + Lang.t('grammar_your_ans') + q.options[a.chosen] + '</div>' +
         '</div>' +
       '</div>';
     });
@@ -511,19 +580,19 @@ var GrammarView = (function () {
         '<div class="qr-score-big">' +
           '<div style="font-size:2.5rem">' + emoji + '</div>' +
           '<div class="qr-num">' + _score + ' / ' + total + '</div>' +
-          '<div class="qr-label">respostas corretas</div>' +
+          '<div class="qr-label">' + Lang.t('grammar_correct_answers') + '</div>' +
           '<div class="qr-pct" style="color:' + _pctColor(pct) + '">' + pct + '%</div>' +
         '</div>' +
         (wrongItems.length > 0
-          ? '<div class="section-title">Respostas erradas (' + wrongItems.length + ')</div>' +
+          ? '<div class="section-title">' + Lang.t('grammar_wrong_title') + ' (' + wrongItems.length + ')</div>' +
             '<div class="wrong-list">' + wrongItems.join('') + '</div>'
           : '') +
         '<div class="qr-actions">' +
-          '<button class="btn btn-primary btn-lg" id="btn-redo">🔁 Refazer</button>' +
+          '<button class="btn btn-primary btn-lg" id="btn-redo">' + Lang.t('grammar_redo') + '</button>' +
           (wrongAnswers.length > 0
-            ? '<button class="btn btn-secondary" id="btn-review-gr">📚 Rever erros (' + wrongAnswers.length + ')</button>'
+            ? '<button class="btn btn-secondary" id="btn-review-gr">' + Lang.t('grammar_review') + ' (' + wrongAnswers.length + ')</button>'
             : '') +
-          '<button class="btn btn-ghost" id="btn-back-gr">← Voltar</button>' +
+          '<button class="btn btn-ghost" id="btn-back-gr">' + Lang.t('grammar_back') + '</button>' +
         '</div>' +
       '</div>';
 

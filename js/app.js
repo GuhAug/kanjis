@@ -123,6 +123,7 @@ var KanjiApp = (function () {
     navigate: navigate,
     setKeyHandler: setKeyHandler,
     init: init,
+    rerender: _onHashChange,
   };
 
 })();
@@ -151,9 +152,9 @@ FlashcardView._runWithPool = function (container, pool) {
       container.innerHTML =
         '<div class="view-enter fc-result-screen">' +
           '<div class="fc-result-score">' + correct + ' / ' + shuffled.length + '</div>' +
-          '<div class="fc-result-label">Sessão de revisão concluída!</div>' +
+          '<div class="fc-result-label">' + Lang.t('fc_review_done') + '</div>' +
           '<div class="fc-result-actions mt-16">' +
-            '<button class="btn btn-primary btn-lg" id="btn-back-flash">← Voltar ao Quiz</button>' +
+            '<button class="btn btn-primary btn-lg" id="btn-back-flash">' + Lang.t('fc_back_quiz') + '</button>' +
           '</div>' +
         '</div>';
       container.querySelector('#btn-back-flash').addEventListener('click', function () {
@@ -169,12 +170,12 @@ FlashcardView._runWithPool = function (container, pool) {
     container.innerHTML =
       '<div class="view-enter flashcard-session">' +
         '<div class="fc-progress-bar"><div class="fc-progress-fill" style="width:' + pct + '%"></div></div>' +
-        '<div class="fc-counter">' + (position + 1) + ' / ' + total + ' (Revisão de erros)</div>' +
+        '<div class="fc-counter">' + (position + 1) + ' / ' + total + ' ' + Lang.t('fc_review_mode') + '</div>' +
         '<div class="flip-card-wrap" id="flip-wrap">' +
           '<div class="flip-card-inner">' +
             '<div class="flip-card-front">' +
               '<div class="fc-big-kanji">' + k.k + '</div>' +
-              '<div class="fc-hint">Clique para virar</div>' +
+              '<div class="fc-hint">' + Lang.t('fc_flip_hint') + '</div>' +
             '</div>' +
             '<div class="flip-card-back">' +
               '<div class="fc-big-kanji" style="font-size:3rem">' + k.k + '</div>' +
@@ -185,10 +186,10 @@ FlashcardView._runWithPool = function (container, pool) {
           '</div>' +
         '</div>' +
         '<div id="fc-controls" style="display:none" class="fc-controls">' +
-          '<button class="btn btn-danger" id="btn-wrong">✗ Não sei</button>' +
-          '<button class="btn btn-success" id="btn-correct">✓ Sei</button>' +
+          '<button class="btn btn-danger" id="btn-wrong">' + Lang.t('fc_btn_wrong') + '</button>' +
+          '<button class="btn btn-success" id="btn-correct">' + Lang.t('fc_btn_correct') + '</button>' +
         '</div>' +
-        '<div class="fc-keyboard-hint">Espaço = virar | ← errei | → acertei</div>' +
+        '<div class="fc-keyboard-hint">' + Lang.t('fc_keyboard_hint') + '</div>' +
       '</div>';
 
     flipped = false;

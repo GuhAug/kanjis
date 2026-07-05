@@ -4,7 +4,6 @@
 
 var QuizView = (function () {
 
-  // Session state
   var _questions = [];
   var _index     = 0;
   var _score     = 0;
@@ -16,11 +15,10 @@ var QuizView = (function () {
   function buildQuestions(pool, type, count) {
     var questions = [];
 
-    // Filter pool by type requirements
     var validPool = pool.filter(function (k) {
       if (type === 'kun')  return !!k.kun;
       if (type === 'on')   return !!k.on;
-      return true; // meaning and recognition work for all
+      return true;
     });
 
     if (!validPool.length) return [];
@@ -38,10 +36,9 @@ var QuizView = (function () {
   }
 
   function _buildQuestion(k, type, pool) {
-    var stimulus, stimulusType, options, correctIndex, field;
+    var options, correctIndex;
 
     if (type === 'meaning') {
-      // Kanji → Portuguese meaning
       var distractors = KanjiData.getDistractors(k, 'pt', 3);
       if (distractors.length < 3) return null;
       options = distractors.concat([k.pt]);
@@ -50,7 +47,7 @@ var QuizView = (function () {
       return {
         kanjiId:    k.id,
         type:       'meaning',
-        stimLabel:  'O que significa este kanji?',
+        stimLabel:  Lang.t('quiz_stim_meaning'),
         stimKanji:  k.k,
         stimText:   null,
         options:    options,
@@ -67,7 +64,7 @@ var QuizView = (function () {
       return {
         kanjiId:   k.id,
         type:      'kun',
-        stimLabel: 'Qual a leitura Kun deste kanji?',
+        stimLabel: Lang.t('quiz_stim_kun'),
         stimKanji: k.k,
         stimText:  null,
         options:   options,
@@ -84,7 +81,7 @@ var QuizView = (function () {
       return {
         kanjiId:   k.id,
         type:      'on',
-        stimLabel: 'Qual a leitura On deste kanji?',
+        stimLabel: Lang.t('quiz_stim_on'),
         stimKanji: k.k,
         stimText:  null,
         options:   options,
@@ -94,7 +91,6 @@ var QuizView = (function () {
     }
 
     if (type === 'recognition') {
-      // Meaning → Kanji character
       var distK = KanjiData.getDistractors(k, 'k', 3);
       if (distK.length < 3) return null;
       options = distK.concat([k.k]);
@@ -102,7 +98,7 @@ var QuizView = (function () {
       return {
         kanjiId:   k.id,
         type:      'recognition',
-        stimLabel: 'Qual é o kanji para:',
+        stimLabel: Lang.t('quiz_stim_recog'),
         stimKanji: null,
         stimText:  k.pt,
         options:   options,
@@ -116,21 +112,18 @@ var QuizView = (function () {
       var sentenceHtml = k.kunExHtml || k.onExHtml;
       if (!sentence) return null;
 
-      // Find which token in the annotated HTML contains k.k.
-      // If it's a compound (今日, 音楽…) we ask for the full compound reading.
       var targetSurface = k.k;
       var correctReading = null;
       if (sentenceHtml) {
         var re = /<ruby>([^<]+)<rt>([^<]+)<\/rt><\/ruby>/g, m;
         while ((m = re.exec(sentenceHtml)) !== null) {
           if (m[1].indexOf(k.k) !== -1) {
-            targetSurface  = m[1];   // e.g. "今日"
-            correctReading = m[2];   // e.g. "きょう"
+            targetSurface  = m[1];
+            correctReading = m[2];
             break;
           }
         }
       }
-      // Fall back to isolated kun/on reading
       function _cleanR(r) {
         return r.split('、')[0].replace(/[（(][^）)]*[）)]/g,'').replace(/[～〜~]/g,'')
           .replace(/[ァ-ン]/g, function(c){ return String.fromCharCode(c.charCodeAt(0)-0x60); }).trim();
@@ -140,12 +133,8 @@ var QuizView = (function () {
       }
       if (!correctReading) return null;
 
-      // Build distractors:
-      // 1. Always include the naive single-kanji readings as tempting wrong answers
-      // 2. Fill remaining slots from pool
       var distractors = [];
       if (targetSurface !== k.k) {
-        // We're asking about a compound — add the isolated reading as a distractor
         var naiveKun = k.kun ? _cleanR(k.kun) : null;
         var naiveOn  = k.on  ? _cleanR(k.on)  : null;
         if (naiveKun && naiveKun !== correctReading) distractors.push(naiveKun);
@@ -160,15 +149,14 @@ var QuizView = (function () {
       options = distractors.concat([correctReading]);
       KanjiData.shuffle(options);
 
-      // Stimulus: plain sentence with the full target surface highlighted
       var stimHtml = sentence.replace(
         new RegExp(targetSurface.split('').join(''), 'g'),
         '<span class="qs-target">' + targetSurface + '</span>'
       );
 
       var stimLabel = targetSurface.length > 1
-        ? 'Como se lê a palavra destacada?'
-        : 'Como se lê o kanji destacado?';
+        ? Lang.t('quiz_stim_word')
+        : Lang.t('quiz_stim_kanji');
 
       return {
         kanjiId:     k.id,
@@ -188,7 +176,6 @@ var QuizView = (function () {
 
   // ---- Config screen ----
   function render(container, params) {
-    // Support direct navigation: /quiz/level/chapter
     if (params[1] && params[1] !== '/session' && params[1] !== '/results') {
       var parts = params[1].replace(/^\//, '').split('/');
       var lv = parseInt(parts[0]) || 0;
@@ -216,43 +203,43 @@ var QuizView = (function () {
     var selectedChapters = [];
 
     var levelChips = levels.map(function (lv) {
-      return '<div class="filter-chip" data-level="' + lv.level + '">' + lv.name + '</div>';
+      return '<div class="filter-chip" data-level="' + lv.level + '">' + (Lang.t('level_' + lv.level) || lv.name) + '</div>';
     }).join('');
 
     var countOpts = [5, 10, 20].map(function (n) {
-      return '<option value="' + n + '" ' + (n === 10 ? 'selected' : '') + '>' + n + ' questões</option>';
-    }).join('') + '<option value="0">Todas</option>';
+      return '<option value="' + n + '" ' + (n === 10 ? 'selected' : '') + '>' + n + ' ' + Lang.t('quiz_count').toLowerCase().replace('number of ', '').replace('número de ', '') + '</option>';
+    }).join('') + '<option value="0">' + Lang.t('quiz_all') + '</option>';
 
     container.innerHTML =
       '<div class="view-enter">' +
         '<div class="page-header">' +
-          '<h1>✏️ Quiz</h1>' +
-          '<p>Teste seus conhecimentos sobre os kanji.</p>' +
+          '<h1>' + Lang.t('quiz_title') + '</h1>' +
+          '<p>' + Lang.t('quiz_subtitle') + '</p>' +
         '</div>' +
         '<div class="quiz-config card">' +
           '<div class="field">' +
-            '<label>Nível <span class="field-hint">(um ou mais)</span></label>' +
+            '<label>' + Lang.t('quiz_level') + ' <span class="field-hint">' + Lang.t('quiz_level_hint') + '</span></label>' +
             '<div class="chip-group" id="qz-levels">' + levelChips + '</div>' +
           '</div>' +
           '<div class="field">' +
-            '<label>Capítulo <span class="field-hint">(um ou mais)</span></label>' +
+            '<label>' + Lang.t('quiz_chapter') + ' <span class="field-hint">' + Lang.t('quiz_chapter_hint') + '</span></label>' +
             '<div class="chip-group" id="qz-chapters"></div>' +
           '</div>' +
           '<div class="field">' +
-            '<label>Número de questões</label>' +
+            '<label>' + Lang.t('quiz_count') + '</label>' +
             '<select id="qz-count">' + countOpts + '</select>' +
           '</div>' +
           '<div class="field">' +
-            '<label>Tipo de quiz</label>' +
+            '<label>' + Lang.t('quiz_type') + '</label>' +
             '<div class="quiz-type-options">' +
-              _typeOpt('meaning',     '🀄', 'Significado',    'Kanji → adivinhe o significado em português') +
-              _typeOpt('kun',         '📝', 'Leitura Kun',    'Kanji → adivinhe a leitura Kun (hiragana)') +
-              _typeOpt('on',          '🔊', 'Leitura On',     'Kanji → adivinhe a leitura On (katakana)') +
-              _typeOpt('recognition', '🔍', 'Reconhecimento', 'Significado → identifique o kanji correto') +
-              _typeOpt('reading',     '📝', 'Leitura em frase', 'Frase completa → escolha a leitura do kanji destacado') +
+              _typeOpt('meaning',     '🀄', Lang.t('quiz_meaning_title'), Lang.t('quiz_meaning_desc')) +
+              _typeOpt('kun',         '📝', Lang.t('quiz_kun_title'),     Lang.t('quiz_kun_desc')) +
+              _typeOpt('on',          '🔊', Lang.t('quiz_on_title'),      Lang.t('quiz_on_desc')) +
+              _typeOpt('recognition', '🔍', Lang.t('quiz_recog_title'),   Lang.t('quiz_recog_desc')) +
+              _typeOpt('reading',     '📝', Lang.t('quiz_reading_title'), Lang.t('quiz_reading_desc')) +
             '</div>' +
           '</div>' +
-          '<button class="btn btn-primary btn-lg w-full mt-16" id="btn-start-qz">Iniciar quiz</button>' +
+          '<button class="btn btn-primary btn-lg w-full mt-16" id="btn-start-qz">' + Lang.t('quiz_start') + '</button>' +
         '</div>' +
       '</div>';
 
@@ -261,11 +248,10 @@ var QuizView = (function () {
     function updateChapterChips() {
       var chaptersEl = container.querySelector('#qz-chapters');
       var chapters = KanjiData.getChaptersForLevels(selectedLevels);
-      // Drop any previously selected chapters that no longer exist in the filtered set
       selectedChapters = selectedChapters.filter(function (ch) { return chapters.indexOf(ch) !== -1; });
       chaptersEl.innerHTML = chapters.map(function (ch) {
         var sel = selectedChapters.indexOf(ch) !== -1 ? ' selected' : '';
-        return '<div class="filter-chip' + sel + '" data-chapter="' + ch + '">Cap. ' + ch + '</div>';
+        return '<div class="filter-chip' + sel + '" data-chapter="' + ch + '">' + Lang.t('quiz_cap') + ' ' + ch + '</div>';
       }).join('');
       chaptersEl.querySelectorAll('.filter-chip').forEach(function (el) {
         el.addEventListener('click', function () {
@@ -277,7 +263,6 @@ var QuizView = (function () {
       });
     }
 
-    // Render chapter chips for the initial state (all levels = all chapters)
     updateChapterChips();
 
     container.querySelector('#qz-levels').addEventListener('click', function (e) {
@@ -306,7 +291,7 @@ var QuizView = (function () {
       qs = qs.filter(Boolean);
 
       if (!qs.length) {
-        Toast.error('Não há kanji suficientes para este tipo de quiz. Tente outro nível ou tipo.');
+        Toast.error(Lang.t('quiz_no_kanji'));
         return;
       }
 
@@ -363,9 +348,9 @@ var QuizView = (function () {
             : '') +
         '</div>' +
 
-        '<button class="btn btn-primary quiz-next-btn hidden" id="qz-next">Próxima →</button>' +
+        '<button class="btn btn-primary quiz-next-btn hidden" id="qz-next">' + Lang.t('quiz_next') + '</button>' +
         '<div style="text-align:center;margin-top:12px">' +
-          '<button class="btn btn-ghost" id="qz-exit" style="font-size:0.85rem;opacity:0.6">✕ Sair do quiz</button>' +
+          '<button class="btn btn-ghost" id="qz-exit" style="font-size:0.85rem;opacity:0.6">' + Lang.t('quiz_exit') + '</button>' +
         '</div>' +
       '</div>';
 
@@ -382,7 +367,6 @@ var QuizView = (function () {
       if (isCorrect) _score++;
       _answers.push({ id: q.kanjiId, chosen: chosenIdx, correct: q.correct, isCorrect: isCorrect });
 
-      // Highlight options
       optionsEl.querySelectorAll('.quiz-option').forEach(function (btn) {
         btn.classList.add('answered');
         var idx = parseInt(btn.dataset.idx);
@@ -390,12 +374,11 @@ var QuizView = (function () {
         else if (idx === chosenIdx && !isCorrect) btn.classList.add('wrong');
       });
 
-      // Feedback
       feedbackEl.classList.add('show');
       feedbackEl.classList.add(isCorrect ? 'correct-fb' : 'wrong-fb');
       resultEl.textContent = isCorrect
-        ? '✅ Correto! — ' + q.explanation.pt
-        : '❌ Errado. A resposta correta é: ' + q.options[q.correct];
+        ? Lang.t('quiz_correct_prefix') + q.explanation.pt
+        : Lang.t('quiz_wrong_prefix') + q.options[q.correct];
 
       nextBtn.classList.remove('hidden');
 
@@ -419,7 +402,6 @@ var QuizView = (function () {
       _renderConfig(container);
     });
 
-    // Keyboard: 1-4 to select option
     KanjiApp.setKeyHandler(function (e) {
       var n = parseInt(e.key);
       if (n >= 1 && n <= 4) answer(n - 1);
@@ -441,7 +423,7 @@ var QuizView = (function () {
         '<div class="wi-kanji">' + k.k + '</div>' +
         '<div class="wi-info">' +
           '<div class="wi-correct">' + (q ? q.options[q.correct] : k.pt) + '</div>' +
-          '<div class="wi-yours">Sua resposta: ' + (q ? q.options[a.chosen] : '?') + '</div>' +
+          '<div class="wi-yours">' + Lang.t('quiz_your_ans') + (q ? q.options[a.chosen] : '?') + '</div>' +
         '</div>' +
       '</div>';
     });
@@ -454,19 +436,19 @@ var QuizView = (function () {
         '<div class="qr-score-big">' +
           '<div style="font-size:2.5rem">' + emoji + '</div>' +
           '<div class="qr-num">' + _score + ' / ' + total + '</div>' +
-          '<div class="qr-label">questões corretas</div>' +
+          '<div class="qr-label">' + Lang.t('quiz_correct_label') + '</div>' +
           '<div class="qr-pct" style="color:' + _pctColor(pct) + '">' + pct + '%</div>' +
         '</div>' +
 
         (wrongKanji.length > 0 ?
-          '<div class="section-title">Respostas erradas (' + wrongKanji.length + ')</div>' +
+          '<div class="section-title">' + Lang.t('quiz_wrong_title') + ' (' + wrongKanji.length + ')</div>' +
           '<div class="wrong-list">' + wrongKanji.join('') + '</div>' : '') +
 
         '<div class="qr-actions">' +
-          '<button class="btn btn-primary btn-lg" id="btn-redo">🔁 Refazer quiz</button>' +
+          '<button class="btn btn-primary btn-lg" id="btn-redo">' + Lang.t('quiz_redo') + '</button>' +
           (wrongKanji.length > 0 ?
-            '<button class="btn btn-secondary btn-lg" id="btn-study-wrong">🃏 Estudar erros no Flashcard</button>' : '') +
-          '<button class="btn btn-ghost" id="btn-back">← Voltar</button>' +
+            '<button class="btn btn-secondary btn-lg" id="btn-study-wrong">' + Lang.t('quiz_study_err') + '</button>' : '') +
+          '<button class="btn btn-ghost" id="btn-back">' + Lang.t('quiz_back') + '</button>' +
         '</div>' +
       '</div>';
 
@@ -479,7 +461,6 @@ var QuizView = (function () {
     var btnStudy = container.querySelector('#btn-study-wrong');
     if (btnStudy) btnStudy.addEventListener('click', function () {
       var wrongIds = wrongAnswers.map(function (a) { return a.id; });
-      // Store in flashcard state and navigate
       FlashcardView._startWithIds(wrongIds, container);
     });
 
@@ -509,7 +490,6 @@ var QuizView = (function () {
 FlashcardView._startWithIds = function (ids, container) {
   var pool = ids.map(function (id) { return KanjiData.getById(id); }).filter(Boolean);
   if (!pool.length) return;
-  // Store globally and navigate
   window._fcOverridePool = pool;
   KanjiApp.navigate('/flashcard/custom');
 };

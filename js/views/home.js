@@ -4,8 +4,6 @@
 
 var HomeView = (function () {
 
-  var _chart = null;
-
   function render(container) {
     var stats          = KanjiStorage.getStats();
     var grammarHistory = KanjiStorage.getGrammarHistory();
@@ -13,55 +11,54 @@ var HomeView = (function () {
     container.innerHTML =
       '<div class="view-enter">' +
         '<div class="page-header">' +
-          '<h1>Bem-vindo ao Nihongo Progressive</h1>' +
-          '<p>Acompanhe seu progresso e continue estudando.</p>' +
+          '<h1>' + Lang.t('home_welcome') + '</h1>' +
+          '<p>' + Lang.t('home_subtitle') + '</p>' +
         '</div>' +
 
         _renderStreak(stats) +
 
         '<div class="stats-grid">' +
-          _statCard('📊', stats.total, 'Kanji total') +
-          _statCard('👁️', stats.seen, 'Estudados') +
-          _statCard('⭐', stats.mastered, 'Dominados') +
-          _statCard('📝', (stats.quizHistory.length > 0 ? stats.quizHistory[0].score + '/' + stats.quizHistory[0].total : '—'), 'Último quiz') +
+          _statCard('📊', stats.total,   Lang.t('home_stat_total')) +
+          _statCard('👁️', stats.seen,    Lang.t('home_stat_seen')) +
+          _statCard('⭐', stats.mastered, Lang.t('home_stat_mastered')) +
+          _statCard('📝', (stats.quizHistory.length > 0 ? stats.quizHistory[0].score + '/' + stats.quizHistory[0].total : '—'), Lang.t('home_stat_lastquiz')) +
         '</div>' +
 
-        '<div class="section-title">Atalhos — Kanji</div>' +
+        '<div class="section-title">' + Lang.t('home_shortcuts_kanji') + '</div>' +
         '<div class="home-cta-grid">' +
-          _ctaCard('📚', 'Navegar', 'Explore por nível e capítulo', '/browse') +
-          _ctaCard('🃏', 'Flashcards', 'Pratique com virada de cartas', '/flashcard') +
-          _ctaCard('✏️', 'Quiz', 'Teste seus conhecimentos', '/quiz') +
+          _ctaCard('📚', Lang.t('cta_browse_title'), Lang.t('cta_browse_desc'), '/browse') +
+          _ctaCard('🃏', Lang.t('cta_flash_title'),  Lang.t('cta_flash_desc'),  '/flashcard') +
+          _ctaCard('✏️', Lang.t('cta_quiz_title'),   Lang.t('cta_quiz_desc'),   '/quiz') +
         '</div>' +
 
-        '<div class="section-title">Atalhos — Gramática</div>' +
+        '<div class="section-title">' + Lang.t('home_shortcuts_grammar') + '</div>' +
         '<div class="home-cta-grid">' +
-          _ctaCard('🔀', 'Formas Polida e Informal', 'Polido ↔ Informal', '/grammar') +
-          _ctaCard('🧩', 'Partículas', 'Escolha a partícula correta', '/particles') +
-          _ctaCard('↔️', 'Transitivo e Intransitivo', '他動詞 vs 自動詞', '/transitivity') +
-          _ctaCard('📖', 'Teoria', 'Aprenda sobre o sistema de escrita', '/theory') +
+          _ctaCard('🔀', Lang.t('cta_grammar_title'),      Lang.t('cta_grammar_desc'),      '/grammar') +
+          _ctaCard('🧩', Lang.t('cta_particles_title'),    Lang.t('cta_particles_desc'),    '/particles') +
+          _ctaCard('↔️', Lang.t('cta_transitivity_title'), Lang.t('cta_transitivity_desc'), '/transitivity') +
+          _ctaCard('📖', Lang.t('cta_theory_title'),       Lang.t('cta_theory_desc'),       '/theory') +
         '</div>' +
 
-        '<div class="section-title">Kanji — Progresso por nível</div>' +
+        '<div class="section-title">' + Lang.t('home_level_progress') + '</div>' +
         _renderLevelProgress(stats) +
 
         (stats.quizHistory.length > 0 ?
-          '<div class="section-title mt-24">Histórico — Kanji</div>' +
+          '<div class="section-title mt-24">' + Lang.t('home_history_kanji') + '</div>' +
           _renderQuizHistory(stats.quizHistory) : '') +
 
         (grammarHistory.length > 0 ?
-          '<div class="section-title mt-24">Histórico — Gramática</div>' +
+          '<div class="section-title mt-24">' + Lang.t('home_history_grammar') + '</div>' +
           _renderQuizHistory(grammarHistory) : '') +
 
         '<div class="divider"></div>' +
         '<div class="flex-gap flex-wrap">' +
-          '<button class="btn btn-secondary btn-sm" id="btn-export">⬇️ Exportar progresso</button>' +
-          '<button class="btn btn-secondary btn-sm" id="btn-import">⬆️ Importar progresso</button>' +
-          '<button class="btn btn-ghost btn-sm" id="btn-reset">🗑️ Resetar</button>' +
+          '<button class="btn btn-secondary btn-sm" id="btn-export">' + Lang.t('home_export') + '</button>' +
+          '<button class="btn btn-secondary btn-sm" id="btn-import">' + Lang.t('home_import') + '</button>' +
+          '<button class="btn btn-ghost btn-sm" id="btn-reset">' + Lang.t('home_reset') + '</button>' +
         '</div>' +
         '<input type="file" id="import-file-input" accept=".json" style="display:none">' +
       '</div>';
 
-    // Bind events
     var btnExport = container.querySelector('#btn-export');
     var btnImport = container.querySelector('#btn-import');
     var btnReset  = container.querySelector('#btn-reset');
@@ -69,7 +66,7 @@ var HomeView = (function () {
 
     if (btnExport) btnExport.addEventListener('click', function () {
       KanjiStorage.exportJSON();
-      Toast.success('Progresso exportado!');
+      Toast.success(Lang.t('home_toast_exported'));
     });
 
     if (btnImport) btnImport.addEventListener('click', function () {
@@ -82,27 +79,23 @@ var HomeView = (function () {
       var reader = new FileReader();
       reader.onload = function (ev) {
         if (KanjiStorage.importJSON(ev.target.result)) {
-          Toast.success('Progresso importado com sucesso!');
+          Toast.success(Lang.t('home_toast_imported'));
           KanjiApp.navigate('/');
         } else {
-          Toast.error('Arquivo inválido.');
+          Toast.error(Lang.t('home_toast_import_err'));
         }
       };
       reader.readAsText(file);
     });
 
     if (btnReset) btnReset.addEventListener('click', function () {
-      Modal.confirm('Resetar progresso',
-        'Tem certeza? Todo o seu progresso será apagado permanentemente.',
-        function () {
-          KanjiStorage.reset();
-          Toast.success('Progresso resetado.');
-          KanjiApp.navigate('/');
-        }
-      );
+      Modal.confirm(Lang.t('home_reset_title'), Lang.t('home_reset_msg'), function () {
+        KanjiStorage.reset();
+        Toast.success(Lang.t('home_toast_reset'));
+        KanjiApp.navigate('/');
+      });
     });
 
-    // CTA clicks
     container.querySelectorAll('[data-nav]').forEach(function (el) {
       el.addEventListener('click', function () {
         KanjiApp.navigate(el.dataset.nav);
@@ -112,11 +105,12 @@ var HomeView = (function () {
 
   function _renderStreak(stats) {
     if (!stats.streak) return '';
+    var streakLabel = stats.streak === 1 ? Lang.t('home_streak_day') : Lang.t('home_streak_days');
     return '<div class="streak-display mb-24">' +
       '<span class="streak-num">🔥 ' + stats.streak + '</span>' +
       '<div class="streak-text">' +
-        '<strong>' + (stats.streak === 1 ? 'dia de sequência' : 'dias de sequência') + '</strong><br>' +
-        '<span style="font-size:0.82rem;color:var(--text-muted)">Continue estudando todos os dias!</span>' +
+        '<strong>' + streakLabel + '</strong><br>' +
+        '<span style="font-size:0.82rem;color:var(--text-muted)">' + Lang.t('home_streak_keep') + '</span>' +
       '</div>' +
     '</div>';
   }
@@ -131,10 +125,10 @@ var HomeView = (function () {
 
   function _renderLevelProgress(stats) {
     var levels = [
-      { n: 1, name: 'Iniciante',     color: 'var(--level-1)' },
-      { n: 2, name: 'Elementar',     color: 'var(--level-2)' },
-      { n: 3, name: 'Intermediário', color: 'var(--level-3)' },
-      { n: 4, name: 'Avançado',      color: 'var(--level-4)' },
+      { n: 1, name: Lang.t('level_1'), color: 'var(--level-1)' },
+      { n: 2, name: Lang.t('level_2'), color: 'var(--level-2)' },
+      { n: 3, name: Lang.t('level_3'), color: 'var(--level-3)' },
+      { n: 4, name: Lang.t('level_4'), color: 'var(--level-4)' },
     ];
 
     return '<div class="level-progress-list mb-24">' +

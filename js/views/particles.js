@@ -27,20 +27,20 @@ var ParticlesView = (function () {
     container.innerHTML =
       '<div class="view-enter">' +
         '<div class="page-header">' +
-          '<h1>🧩 Partículas</h1>' +
-          '<p>Escolha a partícula correta para completar cada frase.</p>' +
+          '<h1>' + Lang.t('particles_title') + '</h1>' +
+          '<p>' + Lang.t('particles_subtitle') + '</p>' +
         '</div>' +
         '<div class="grammar-config card">' +
           '<div class="field">' +
-            '<label>Número de questões</label>' +
+            '<label>' + Lang.t('particles_count') + '</label>' +
             '<select id="pt-count">' +
-              '<option value="10"' + (_count === 10 ? ' selected' : '') + '>10 questões</option>' +
-              '<option value="20"' + (_count === 20 ? ' selected' : '') + '>20 questões</option>' +
-              '<option value="0"'  + (_count === 0  ? ' selected' : '') + '>Todas (' + total + ')</option>' +
+              '<option value="10"' + (_count === 10 ? ' selected' : '') + '>10</option>' +
+              '<option value="20"' + (_count === 20 ? ' selected' : '') + '>20</option>' +
+              '<option value="0"'  + (_count === 0  ? ' selected' : '') + '>All (' + total + ')</option>' +
             '</select>' +
           '</div>' +
           '<div class="gr-config-actions">' +
-            '<button class="btn btn-primary btn-lg" id="btn-start-pt">Iniciar Quiz</button>' +
+            '<button class="btn btn-primary btn-lg" id="btn-start-pt">' + Lang.t('particles_start') + '</button>' +
           '</div>' +
         '</div>' +
         _renderParticleRef() +
@@ -65,18 +65,18 @@ var ParticlesView = (function () {
 
   function _renderParticleRef() {
     var rows = [
-      ['は',   'Tópico da frase',                     'Esta loja ___ famosa.'],
-      ['が',   'Sujeito / foco',                      'Quem ___ veio?'],
-      ['を',   'Objeto direto',                       'Vou comer arroz ___.'],
-      ['に',   'Destino / tempo / local (existência)', 'Vou ___ escola. / Às 7h'],
-      ['で',   'Local de ação / meio / instrumento',  'Estudo ___ biblioteca.'],
-      ['と',   'Companhia / lista completa',          'Fui com amigos ___.'],
-      ['も',   'Inclusão (também)',                   'Yamada ___ é estudante.'],
-      ['の',   'Possessivo / modificador',            'É o livro ___ Tanaka.'],
-      ['から', 'Ponto de partida',                    'Vim ___ Japão.'],
-      ['まで', 'Ponto final',                         'Trabalho ___ as 6h.'],
-      ['へ',   'Direção (ênfase no trajeto)',          'Quero ir ___ exterior.'],
-      ['より', 'Comparação (do que)',                  'Trem é mais rápido ___ ônibus.'],
+      ['は',   Lang.t('p_ha_fn'),   Lang.t('p_ha_ex')],
+      ['が',   Lang.t('p_ga_fn'),   Lang.t('p_ga_ex')],
+      ['を',   Lang.t('p_wo_fn'),   Lang.t('p_wo_ex')],
+      ['に',   Lang.t('p_ni_fn'),   Lang.t('p_ni_ex')],
+      ['で',   Lang.t('p_de_fn'),   Lang.t('p_de_ex')],
+      ['と',   Lang.t('p_to_fn'),   Lang.t('p_to_ex')],
+      ['も',   Lang.t('p_mo_fn'),   Lang.t('p_mo_ex')],
+      ['の',   Lang.t('p_no_fn'),   Lang.t('p_no_ex')],
+      ['から', Lang.t('p_kara_fn'), Lang.t('p_kara_ex')],
+      ['まで', Lang.t('p_made_fn'), Lang.t('p_made_ex')],
+      ['へ',   Lang.t('p_e_fn'),    Lang.t('p_e_ex')],
+      ['より', Lang.t('p_yori_fn'), Lang.t('p_yori_ex')],
     ];
 
     var tableRows = rows.map(function (r) {
@@ -87,10 +87,14 @@ var ParticlesView = (function () {
       '</tr>';
     }).join('');
 
-    return '<div class="section-title mt-24">Referência rápida</div>' +
+    return '<div class="section-title mt-24">' + Lang.t('particles_ref') + '</div>' +
       '<div class="card" style="overflow-x:auto">' +
         '<table class="gr-table">' +
-          '<thead><tr><th>Partícula</th><th>Função</th><th>Exemplo</th></tr></thead>' +
+          '<thead><tr>' +
+            '<th>' + Lang.t('particles_ref_particle') + '</th>' +
+            '<th>' + Lang.t('particles_ref_function') + '</th>' +
+            '<th>' + Lang.t('particles_ref_example') + '</th>' +
+          '</tr></thead>' +
           '<tbody>' + tableRows + '</tbody>' +
         '</table>' +
       '</div>';
@@ -108,7 +112,6 @@ var ParticlesView = (function () {
     var q   = _questions[_index];
     var pct = Math.round((_index / _questions.length) * 100);
 
-    // Build shuffled options once (stable for this question render)
     var allOpts = q.distractors.concat([q.particle]);
     _shuffle(allOpts);
     var correctIdx = allOpts.indexOf(q.particle);
@@ -136,15 +139,15 @@ var ParticlesView = (function () {
           '<div class="qf-result" id="pt-result"></div>' +
           '<div class="gr-explanation" id="pt-exp" style="display:none">' +
             '<div class="gr-exp-row">' +
-              '<span class="gr-exp-lbl">Função:</span>' +
+              '<span class="gr-exp-lbl">' + Lang.t('particles_function_lbl') + '</span>' +
               '<span class="gr-exp-val" style="font-size:0.9rem">' + q.role + '</span>' +
             '</div>' +
           '</div>' +
         '</div>' +
 
-        '<button class="btn btn-primary quiz-next-btn hidden" id="pt-next">Próxima →</button>' +
+        '<button class="btn btn-primary quiz-next-btn hidden" id="pt-next">' + Lang.t('particles_next') + '</button>' +
         '<div style="text-align:center;margin-top:12px">' +
-          '<button class="btn btn-ghost" id="pt-exit" style="font-size:0.85rem;opacity:0.6">✕ Sair</button>' +
+          '<button class="btn btn-ghost" id="pt-exit" style="font-size:0.85rem;opacity:0.6">' + Lang.t('particles_exit') + '</button>' +
         '</div>' +
       '</div>';
 
@@ -183,8 +186,8 @@ var ParticlesView = (function () {
 
       feedbackEl.classList.add('show', isCorrect ? 'correct-fb' : 'wrong-fb');
       resultEl.textContent = isCorrect
-        ? '✅ Correto!'
-        : '❌ Errado. Resposta: ' + q.particle;
+        ? Lang.t('particles_correct')
+        : Lang.t('particles_wrong_prefix') + q.particle;
       expEl.style.display = 'block';
       nextBtn.classList.remove('hidden');
 
@@ -244,19 +247,19 @@ var ParticlesView = (function () {
         '<div class="qr-score-big">' +
           '<div style="font-size:2.5rem">' + emoji + '</div>' +
           '<div class="qr-num">' + _score + ' / ' + total + '</div>' +
-          '<div class="qr-label">respostas corretas</div>' +
+          '<div class="qr-label">' + Lang.t('particles_correct_answers') + '</div>' +
           '<div class="qr-pct" style="color:' + _pctColor(pct) + '">' + pct + '%</div>' +
         '</div>' +
         (wrongHTML
-          ? '<div class="section-title">Respostas erradas</div>' +
+          ? '<div class="section-title">' + Lang.t('particles_wrong_title') + '</div>' +
             '<div class="wrong-list">' + wrongHTML + '</div>'
           : '') +
         '<div class="qr-actions">' +
-          '<button class="btn btn-primary btn-lg" id="btn-redo-pt">🔁 Refazer</button>' +
+          '<button class="btn btn-primary btn-lg" id="btn-redo-pt">' + Lang.t('particles_redo') + '</button>' +
           (wrongAnswers.length > 0
-            ? '<button class="btn btn-secondary" id="btn-review-pt">📚 Rever erros (' + wrongAnswers.length + ')</button>'
+            ? '<button class="btn btn-secondary" id="btn-review-pt">' + Lang.t('particles_review') + ' (' + wrongAnswers.length + ')</button>'
             : '') +
-          '<button class="btn btn-ghost" id="btn-back-pt">← Voltar</button>' +
+          '<button class="btn btn-ghost" id="btn-back-pt">' + Lang.t('particles_back') + '</button>' +
         '</div>' +
       '</div>';
 

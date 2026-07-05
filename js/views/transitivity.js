@@ -27,20 +27,20 @@ var TransitivityView = (function () {
     container.innerHTML =
       '<div class="view-enter">' +
         '<div class="page-header">' +
-          '<h1>↔️ Transitivo e Intransitivo</h1>' +
-          '<p>Escolha a forma correta do verbo: <strong>他動詞</strong> (transitivo) ou <strong>自動詞</strong> (intransitivo).</p>' +
+          '<h1>' + Lang.t('transitivity_title') + '</h1>' +
+          '<p>' + Lang.t('transitivity_subtitle') + '</p>' +
         '</div>' +
         '<div class="grammar-config card">' +
           '<div class="field">' +
-            '<label>Número de questões</label>' +
+            '<label>' + Lang.t('transitivity_count') + '</label>' +
             '<select id="tr-count">' +
-              '<option value="10"' + (_count === 10 ? ' selected' : '') + '>10 questões</option>' +
-              '<option value="20"' + (_count === 20 ? ' selected' : '') + '>20 questões</option>' +
-              '<option value="0"'  + (_count === 0  ? ' selected' : '') + '>Todas (' + total + ')</option>' +
+              '<option value="10"' + (_count === 10 ? ' selected' : '') + '>10</option>' +
+              '<option value="20"' + (_count === 20 ? ' selected' : '') + '>20</option>' +
+              '<option value="0"'  + (_count === 0  ? ' selected' : '') + '>All (' + total + ')</option>' +
             '</select>' +
           '</div>' +
           '<div class="gr-config-actions">' +
-            '<button class="btn btn-primary btn-lg" id="btn-start-tr">Iniciar Quiz</button>' +
+            '<button class="btn btn-primary btn-lg" id="btn-start-tr">' + Lang.t('transitivity_start') + '</button>' +
           '</div>' +
         '</div>' +
         _renderTheoryCard() +
@@ -66,18 +66,20 @@ var TransitivityView = (function () {
   }
 
   function _renderTheoryCard() {
-    return '<div class="section-title mt-24">Conceito</div>' +
+    return '<div class="section-title mt-24">' + Lang.t('transitivity_concept') + '</div>' +
       '<div class="card grammar-theory-card">' +
         '<div class="theory-cat-header">↔️ <strong>他動詞 vs 自動詞</strong></div>' +
-        '<p class="theory-note">' +
-          '<strong>他動詞 (transitivo)</strong>: o sujeito age sobre um objeto → usa <strong>を</strong>.<br>' +
-          '<strong>自動詞 (intransitivo)</strong>: o sujeito sofre a ação ou age por conta própria → usa <strong>が</strong> (sem agente).' +
-        '</p>' +
+        '<p class="theory-note">' + Lang.t('transitivity_concept_note') + '</p>' +
         '<div class="table-wrap"><table class="gr-table">' +
-          '<thead><tr><th>Tipo</th><th>Partícula</th><th>Exemplo</th><th>Tradução</th></tr></thead>' +
+          '<thead><tr>' +
+            '<th>' + Lang.t('transitivity_col_type') + '</th>' +
+            '<th>' + Lang.t('transitivity_col_part') + '</th>' +
+            '<th>' + Lang.t('transitivity_col_example') + '</th>' +
+            '<th>' + Lang.t('transitivity_col_trans') + '</th>' +
+          '</tr></thead>' +
           '<tbody>' +
-            '<tr><td class="gr-td-label">他動詞</td><td style="color:var(--accent2)">を</td><td>私は窓を<strong>開けた</strong>。</td><td>Eu abri a janela.</td></tr>' +
-            '<tr><td class="gr-td-label">自動詞</td><td style="color:var(--success)">が</td><td>窓が<strong>開いた</strong>。</td><td>A janela abriu.</td></tr>' +
+            '<tr><td class="gr-td-label">他動詞</td><td style="color:var(--accent2)">を</td><td>私は窓を<strong>開けた</strong>。</td><td>' + Lang.t('transitivity_ex_tr_trans') + '</td></tr>' +
+            '<tr><td class="gr-td-label">自動詞</td><td style="color:var(--success)">が</td><td>窓が<strong>開いた</strong>。</td><td>' + Lang.t('transitivity_ex_intr_trans') + '</td></tr>' +
           '</tbody>' +
         '</table></div>' +
       '</div>';
@@ -95,13 +97,13 @@ var TransitivityView = (function () {
       '</tr>';
     }).join('');
 
-    return '<div class="section-title mt-24">Pares estudados</div>' +
+    return '<div class="section-title mt-24">' + Lang.t('transitivity_pairs') + '</div>' +
       '<div class="card" style="overflow-x:auto">' +
         '<table class="gr-table">' +
           '<thead><tr>' +
-            '<th>Significado</th>' +
-            '<th>他動詞 (transitivo)</th>' +
-            '<th>自動詞 (intransitivo)</th>' +
+            '<th>' + Lang.t('transitivity_col_meaning') + '</th>' +
+            '<th>' + Lang.t('transitivity_col_tr') + '</th>' +
+            '<th>' + Lang.t('transitivity_col_intr') + '</th>' +
           '</tr></thead>' +
           '<tbody>' + rows + '</tbody>' +
         '</table>' +
@@ -113,7 +115,6 @@ var TransitivityView = (function () {
   function _buildQuestions(count) {
     var data = window.TRANSITIVITY_DATA || [];
 
-    // Flatten pair questions into raw list
     var raw = [];
     data.forEach(function (pair) {
       pair.qs.forEach(function (q) {
@@ -131,20 +132,17 @@ var TransitivityView = (function () {
     _shuffle(raw);
     var pool = count > 0 ? raw.slice(0, count) : raw;
 
-    // For each question build 4 options: correct + wrong-same-pair + 2 from other pairs
     return pool.map(function (q, idx) {
       var seen = {};
       seen[q.correct] = true;
       seen[q.wrong]   = true;
 
       var dists = [];
-      // Try to get 2 distractors from other questions in pool
       for (var i = 0; i < pool.length && dists.length < 2; i++) {
         if (i === idx) continue;
         var cand = Math.random() < 0.5 ? pool[i].pair.tr.past : pool[i].pair.intr.past;
         if (!seen[cand]) { seen[cand] = true; dists.push(cand); }
       }
-      // Fallback: scan entire raw list
       for (var j = 0; j < raw.length && dists.length < 2; j++) {
         var c2 = Math.random() < 0.5 ? raw[j].pair.tr.past : raw[j].pair.intr.past;
         if (!seen[c2]) { seen[c2] = true; dists.push(c2); }
@@ -175,9 +173,11 @@ var TransitivityView = (function () {
     var q   = _questions[_index];
     var pct = Math.round((_index / _questions.length) * 100);
 
+    var trWord   = Lang.get() === 'en' ? 'transitive'   : 'transitivo';
+    var intrWord = Lang.get() === 'en' ? 'intransitive' : 'intransitivo';
     var typeLabel = q.correctType === 'tr'
-      ? '<span style="color:var(--accent2)">他動詞</span> (transitivo)'
-      : '<span style="color:var(--success)">自動詞</span> (intransitivo)';
+      ? '<span style="color:var(--accent2)">他動詞</span> (' + trWord + ')'
+      : '<span style="color:var(--success)">自動詞</span> (' + intrWord + ')';
 
     var sentenceHTML = q.sentence.replace('___',
       '<span class="particle-blank" id="tr-blank">＿＿＿</span>');
@@ -202,7 +202,7 @@ var TransitivityView = (function () {
           '<div class="qf-result" id="tr-result"></div>' +
           '<div class="gr-explanation" id="tr-exp" style="display:none">' +
             '<div class="gr-exp-row">' +
-              '<span class="gr-exp-lbl">Correto:</span>' +
+              '<span class="gr-exp-lbl">' + (Lang.get() === 'en' ? 'Correct:' : 'Correto:') + '</span>' +
               '<span class="gr-exp-val">' + typeLabel + '</span>' +
             '</div>' +
             '<div class="gr-exp-row" style="margin-top:6px;gap:16px;flex-wrap:wrap">' +
@@ -222,9 +222,9 @@ var TransitivityView = (function () {
           '</div>' +
         '</div>' +
 
-        '<button class="btn btn-primary quiz-next-btn hidden" id="tr-next">Próxima →</button>' +
+        '<button class="btn btn-primary quiz-next-btn hidden" id="tr-next">' + Lang.t('transitivity_next') + '</button>' +
         '<div style="text-align:center;margin-top:12px">' +
-          '<button class="btn btn-ghost" id="tr-exit" style="font-size:0.85rem;opacity:0.6">✕ Sair</button>' +
+          '<button class="btn btn-ghost" id="tr-exit" style="font-size:0.85rem;opacity:0.6">' + Lang.t('transitivity_exit') + '</button>' +
         '</div>' +
       '</div>';
 
@@ -264,8 +264,8 @@ var TransitivityView = (function () {
 
       feedbackEl.classList.add('show', isCorrect ? 'correct-fb' : 'wrong-fb');
       resultEl.textContent = isCorrect
-        ? '✅ Correto!'
-        : '❌ Errado. Resposta: ' + q.correct;
+        ? Lang.t('transitivity_correct')
+        : Lang.t('transitivity_wrong') + ' ' + q.correct;
       expEl.style.display = 'block';
       nextBtn.classList.remove('hidden');
 
@@ -328,19 +328,19 @@ var TransitivityView = (function () {
         '<div class="qr-score-big">' +
           '<div style="font-size:2.5rem">' + emoji + '</div>' +
           '<div class="qr-num">' + _score + ' / ' + total + '</div>' +
-          '<div class="qr-label">respostas corretas</div>' +
+          '<div class="qr-label">' + Lang.t('transitivity_correct_answers') + '</div>' +
           '<div class="qr-pct" style="color:' + _pctColor(pct) + '">' + pct + '%</div>' +
         '</div>' +
         (wrongHTML
-          ? '<div class="section-title">Respostas erradas</div>' +
+          ? '<div class="section-title">' + Lang.t('transitivity_wrong_title') + '</div>' +
             '<div class="wrong-list">' + wrongHTML + '</div>'
           : '') +
         '<div class="qr-actions">' +
-          '<button class="btn btn-primary btn-lg" id="btn-redo-tr">🔁 Refazer</button>' +
+          '<button class="btn btn-primary btn-lg" id="btn-redo-tr">' + Lang.t('transitivity_redo') + '</button>' +
           (wrongAnswers.length > 0
-            ? '<button class="btn btn-secondary" id="btn-review-tr">📚 Rever erros (' + wrongAnswers.length + ')</button>'
+            ? '<button class="btn btn-secondary" id="btn-review-tr">' + Lang.t('transitivity_review') + ' (' + wrongAnswers.length + ')</button>'
             : '') +
-          '<button class="btn btn-ghost" id="btn-back-tr">← Voltar</button>' +
+          '<button class="btn btn-ghost" id="btn-back-tr">' + Lang.t('transitivity_back') + '</button>' +
         '</div>' +
       '</div>';
 

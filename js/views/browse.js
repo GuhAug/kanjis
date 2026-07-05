@@ -7,7 +7,6 @@ var BrowseView = (function () {
   var LEVEL_COLORS = { 1: 'l1', 2: 'l2', 3: 'l3', 4: 'l4' };
 
   function render(container, params) {
-    // params[1] = level (optional), params[2] = chapter (optional)
     var level   = params[1] ? parseInt(params[1]) : null;
     var chapter = params[2] ? parseInt(params[2]) : null;
 
@@ -20,6 +19,10 @@ var BrowseView = (function () {
     }
   }
 
+  function _levelName(n) {
+    return Lang.t('level_' + n) || KanjiData.getLevelName(n);
+  }
+
   // ---- Level selection ----
   function _renderLevelList(container) {
     var levels = KanjiData.getLevels();
@@ -28,22 +31,23 @@ var BrowseView = (function () {
     var cards = levels.map(function (lv) {
       var s = stats.byLevel[lv.level] || { seen: 0, total: lv.count, pct: 0 };
       var cls = LEVEL_COLORS[lv.level] || '';
+      var name = _levelName(lv.level);
       return '<div class="level-card ' + cls + '" data-nav="/browse/' + lv.level + '">' +
         '<div class="lc-num">' + lv.level + '</div>' +
-        '<div class="lc-name">' + lv.name + '</div>' +
-        '<div class="lc-count">' + lv.count + ' kanji</div>' +
+        '<div class="lc-name">' + name + '</div>' +
+        '<div class="lc-count">' + lv.count + ' ' + Lang.t('browse_kanji') + '</div>' +
         '<div class="prog-bar-wrap">' +
           '<div class="prog-bar-fill" style="width:' + s.pct + '%"></div>' +
         '</div>' +
-        '<div style="font-size:0.75rem;color:var(--text-muted);margin-top:6px">' + s.seen + '/' + s.total + ' estudados</div>' +
+        '<div style="font-size:0.75rem;color:var(--text-muted);margin-top:6px">' + s.seen + '/' + s.total + ' ' + Lang.t('browse_studied') + '</div>' +
       '</div>';
     }).join('');
 
     container.innerHTML =
       '<div class="view-enter">' +
         '<div class="page-header">' +
-          '<h1>Navegar Kanji</h1>' +
-          '<p>Escolha um nível para começar.</p>' +
+          '<h1>' + Lang.t('browse_title') + '</h1>' +
+          '<p>' + Lang.t('browse_subtitle') + '</p>' +
         '</div>' +
         '<div class="level-cards-grid">' + cards + '</div>' +
       '</div>';
@@ -53,9 +57,8 @@ var BrowseView = (function () {
 
   // ---- Chapter list ----
   function _renderChapterList(container, level) {
-    var levelName = KanjiData.getLevelName(level);
+    var levelName = _levelName(level);
     var chapters  = KanjiData.getChaptersForLevel(level);
-    var stats     = KanjiStorage.getStats();
 
     var cards = chapters.map(function (ch) {
       var kanji = KanjiData.getChapter(level, ch);
@@ -66,12 +69,12 @@ var BrowseView = (function () {
       });
       return '<div class="chapter-card" data-nav="/browse/' + level + '/' + ch + '">' +
         '<div class="cc-jp">' + KanjiData.getChapterLabel(ch) + '</div>' +
-        '<div class="cc-num">Capítulo ' + ch + '</div>' +
-        '<div class="cc-count">' + kanji.length + ' kanji</div>' +
+        '<div class="cc-num">' + Lang.t('browse_chapter') + ' ' + ch + '</div>' +
+        '<div class="cc-count">' + kanji.length + ' ' + Lang.t('browse_kanji') + '</div>' +
         (seen + mastered > 0 ?
           '<div style="margin-top:6px;font-size:0.72rem;color:var(--text-muted)">' +
             (mastered > 0 ? '<span style="color:var(--success)">⭐' + mastered + ' dom.</span> ' : '') +
-            (seen > 0 ? '<span style="color:var(--accent2)">👁️' + seen + ' vistos</span>' : '') +
+            (seen > 0 ? '<span style="color:var(--accent2)">👁️' + seen + ' ' + Lang.t('browse_studied') + '</span>' : '') +
           '</div>' : '') +
       '</div>';
     }).join('');
@@ -79,13 +82,13 @@ var BrowseView = (function () {
     container.innerHTML =
       '<div class="view-enter">' +
         '<div class="breadcrumb">' +
-          '<a data-nav="/browse">Níveis</a>' +
+          '<a data-nav="/browse">' + Lang.t('browse_levels') + '</a>' +
           '<span>›</span>' +
           '<span>' + levelName + '</span>' +
         '</div>' +
         '<div class="page-header">' +
           '<h1>' + levelName + '</h1>' +
-          '<p>Selecione um capítulo.</p>' +
+          '<p>' + Lang.t('browse_select_chapter') + '</p>' +
         '</div>' +
         '<div class="chapter-cards-grid">' + cards + '</div>' +
       '</div>';
@@ -95,12 +98,12 @@ var BrowseView = (function () {
 
   // ---- Kanji grid ----
   function _renderKanjiGrid(container, level, chapter) {
-    var levelName = KanjiData.getLevelName(level);
+    var levelName = _levelName(level);
     var kanji = KanjiData.getChapter(level, chapter);
     var chLabel = KanjiData.getChapterLabel(chapter);
 
     if (!kanji.length) {
-      container.innerHTML = '<div class="empty-state"><div class="es-icon">😕</div><div class="es-title">Capítulo não encontrado</div></div>';
+      container.innerHTML = '<div class="empty-state"><div class="es-icon">😕</div><div class="es-title">' + Lang.t('browse_not_found') + '</div></div>';
       return;
     }
 
@@ -113,32 +116,31 @@ var BrowseView = (function () {
       '</div>';
     }).join('');
 
-    var seen = kanji.filter(function (k) { return KanjiStorage.isSeen(k.id); }).length;
     var mastered = kanji.filter(function (k) { return KanjiStorage.isMastered(k.id); }).length;
 
     container.innerHTML =
       '<div class="view-enter">' +
         '<div class="breadcrumb">' +
-          '<a data-nav="/browse">Níveis</a>' +
+          '<a data-nav="/browse">' + Lang.t('browse_levels') + '</a>' +
           '<span>›</span>' +
           '<a data-nav="/browse/' + level + '">' + levelName + '</a>' +
           '<span>›</span>' +
-          '<span>Capítulo ' + chapter + '</span>' +
+          '<span>' + Lang.t('browse_chapter') + ' ' + chapter + '</span>' +
         '</div>' +
         '<div class="chapter-info-bar">' +
           '<h2 style="font-size:1.3rem;font-weight:700">' +
             '<span style="font-family:\'Noto Sans JP\',serif">' + chLabel + '</span>' +
-            ' — Capítulo ' + chapter +
+            ' — ' + Lang.t('browse_chapter') + ' ' + chapter +
           '</h2>' +
           '<div class="flex-gap">' +
             '<span class="badge badge-level-' + level + '">' + levelName + '</span>' +
-            '<span class="badge badge-muted">' + kanji.length + ' kanji</span>' +
+            '<span class="badge badge-muted">' + kanji.length + ' ' + Lang.t('browse_kanji') + '</span>' +
             (mastered ? '<span class="badge badge-success">⭐ ' + mastered + '</span>' : '') +
           '</div>' +
         '</div>' +
         '<div class="flex-gap mb-16">' +
-          '<button class="btn btn-secondary btn-sm" id="btn-flashcard-ch">🃏 Flashcard</button>' +
-          '<button class="btn btn-secondary btn-sm" id="btn-quiz-ch">✏️ Quiz</button>' +
+          '<button class="btn btn-secondary btn-sm" id="btn-flashcard-ch">🃏 ' + Lang.t('nav_flashcard') + '</button>' +
+          '<button class="btn btn-secondary btn-sm" id="btn-quiz-ch">✏️ ' + Lang.t('nav_quiz') + '</button>' +
         '</div>' +
         '<div class="kanji-grid" id="kanji-grid">' + cells + '</div>' +
       '</div>';
