@@ -59,13 +59,14 @@ var BrowseView = (function () {
   function _renderChapterList(container, level) {
     var levelName = _levelName(level);
     var chapters  = KanjiData.getChaptersForLevel(level);
+    var progress  = KanjiStorage.getProgress();
 
     var cards = chapters.map(function (ch) {
       var kanji = KanjiData.getChapter(level, ch);
       var seen = 0, mastered = 0;
       kanji.forEach(function (k) {
-        if (KanjiStorage.isMastered(k.id)) mastered++;
-        else if (KanjiStorage.isSeen(k.id)) seen++;
+        if (progress.mastered.indexOf(k.id) !== -1) mastered++;
+        else if (progress.seen.indexOf(k.id) !== -1) seen++;
       });
       return '<div class="chapter-card" data-nav="/browse/' + level + '/' + ch + '">' +
         '<div class="cc-jp">' + KanjiData.getChapterLabel(ch) + '</div>' +
@@ -73,7 +74,7 @@ var BrowseView = (function () {
         '<div class="cc-count">' + kanji.length + ' ' + Lang.t('browse_kanji') + '</div>' +
         (seen + mastered > 0 ?
           '<div style="margin-top:6px;font-size:0.72rem;color:var(--text-muted)">' +
-            (mastered > 0 ? '<span style="color:var(--success)">⭐' + mastered + ' dom.</span> ' : '') +
+            (mastered > 0 ? '<span style="color:var(--success)">⭐' + mastered + ' ' + Lang.t('browse_mastered_abbr') + '</span> ' : '') +
             (seen > 0 ? '<span style="color:var(--accent2)">👁️' + seen + ' ' + Lang.t('browse_studied') + '</span>' : '') +
           '</div>' : '') +
       '</div>';
@@ -107,8 +108,10 @@ var BrowseView = (function () {
       return;
     }
 
+    var progress = KanjiStorage.getProgress();
+
     var cells = kanji.map(function (k) {
-      var cls = KanjiStorage.isMastered(k.id) ? 'mastered' : KanjiStorage.isSeen(k.id) ? 'seen' : '';
+      var cls = progress.mastered.indexOf(k.id) !== -1 ? 'mastered' : progress.seen.indexOf(k.id) !== -1 ? 'seen' : '';
       return '<div class="kanji-cell ' + cls + '" data-kanji-id="' + k.id + '">' +
         '<div class="kc-dot"></div>' +
         '<div class="kc-char">' + k.k + '</div>' +
@@ -116,7 +119,7 @@ var BrowseView = (function () {
       '</div>';
     }).join('');
 
-    var mastered = kanji.filter(function (k) { return KanjiStorage.isMastered(k.id); }).length;
+    var mastered = kanji.filter(function (k) { return progress.mastered.indexOf(k.id) !== -1; }).length;
 
     container.innerHTML =
       '<div class="view-enter">' +

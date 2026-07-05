@@ -51,11 +51,10 @@ var ParticlesView = (function () {
     });
 
     container.querySelector('#btn-start-pt').addEventListener('click', function () {
-      var data = (window.PARTICLES_DATA || []).slice();
-      _shuffle(data);
+      var data = KanjiData.shuffle((window.PARTICLES_DATA || []).slice());
       _questions = _count > 0 ? data.slice(0, _count) : data;
       if (!_questions.length) {
-        Toast.error('Dados de partículas não encontrados.');
+        Toast.error(Lang.t('particles_no_data'));
         return;
       }
       _index = 0; _score = 0; _answers = []; _answered = false; _resultRecorded = false;
@@ -112,8 +111,7 @@ var ParticlesView = (function () {
     var q   = _questions[_index];
     var pct = Math.round((_index / _questions.length) * 100);
 
-    var allOpts = q.distractors.concat([q.particle]);
-    _shuffle(allOpts);
+    var allOpts = KanjiData.shuffle(q.distractors.concat([q.particle]));
     var correctIdx = allOpts.indexOf(q.particle);
 
     var sentenceHTML = q.sentence.replace('___',
@@ -225,7 +223,7 @@ var ParticlesView = (function () {
     var emoji = pct === 100 ? '🏆' : pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '💪';
 
     if (!_resultRecorded) {
-      KanjiStorage.recordGrammarQuiz('Partículas', _score, total);
+      KanjiStorage.recordGrammarQuiz('particles', _score, total);
       _resultRecorded = true;
     }
 
@@ -248,7 +246,7 @@ var ParticlesView = (function () {
           '<div style="font-size:2.5rem">' + emoji + '</div>' +
           '<div class="qr-num">' + _score + ' / ' + total + '</div>' +
           '<div class="qr-label">' + Lang.t('particles_correct_answers') + '</div>' +
-          '<div class="qr-pct" style="color:' + _pctColor(pct) + '">' + pct + '%</div>' +
+          '<div class="qr-pct" style="color:' + KanjiData.pctColor(pct) + '">' + pct + '%</div>' +
         '</div>' +
         (wrongHTML
           ? '<div class="section-title">' + Lang.t('particles_wrong_title') + '</div>' +
@@ -265,7 +263,7 @@ var ParticlesView = (function () {
 
     container.querySelector('#btn-redo-pt').addEventListener('click', function () {
       _index = 0; _score = 0; _answers = [];
-      _shuffle(_questions);
+      KanjiData.shuffle(_questions);
       _renderSession(container);
     });
     var reviewBtn = container.querySelector('#btn-review-pt');
@@ -283,20 +281,6 @@ var ParticlesView = (function () {
       _renderConfig(container);
     });
     KanjiApp.setKeyHandler(null);
-  }
-
-  function _pctColor(pct) {
-    if (pct >= 80) return 'var(--success)';
-    if (pct >= 50) return 'var(--warning)';
-    return 'var(--danger)';
-  }
-
-  function _shuffle(arr) {
-    for (var i = arr.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
-    }
-    return arr;
   }
 
   function destroy() { KanjiApp.setKeyHandler(null); }

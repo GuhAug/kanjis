@@ -196,8 +196,14 @@ var KanjiStorage = (function () {
     }
   }
 
+  function getProgress() {
+    var d = _load();
+    return { seen: d.seen || [], mastered: d.mastered || [] };
+  }
+
   function reset() {
     localStorage.removeItem(KEY);
+    localStorage.removeItem(GRAMMAR_KEY);
   }
 
   return {
@@ -210,6 +216,7 @@ var KanjiStorage = (function () {
     recordQuiz: recordQuiz,
     recordGrammarQuiz: recordGrammarQuiz,
     getGrammarHistory: getGrammarHistory,
+    getProgress: getProgress,
     exportJSON: exportJSON,
     importJSON: importJSON,
     reset: reset,

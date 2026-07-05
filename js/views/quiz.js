@@ -418,7 +418,10 @@ var QuizView = (function () {
     var wrongKanji   = wrongAnswers.map(function (a) {
       var k = KanjiData.getById(a.id);
       if (!k) return '';
-      var q = _questions.find(function (q) { return q.kanjiId === a.id; });
+      var q;
+      for (var qi = 0; qi < _questions.length; qi++) {
+        if (_questions[qi].kanjiId === a.id) { q = _questions[qi]; break; }
+      }
       return '<div class="wrong-item">' +
         '<div class="wi-kanji">' + k.k + '</div>' +
         '<div class="wi-info">' +
@@ -437,7 +440,7 @@ var QuizView = (function () {
           '<div style="font-size:2.5rem">' + emoji + '</div>' +
           '<div class="qr-num">' + _score + ' / ' + total + '</div>' +
           '<div class="qr-label">' + Lang.t('quiz_correct_label') + '</div>' +
-          '<div class="qr-pct" style="color:' + _pctColor(pct) + '">' + pct + '%</div>' +
+          '<div class="qr-pct" style="color:' + KanjiData.pctColor(pct) + '">' + pct + '%</div>' +
         '</div>' +
 
         (wrongKanji.length > 0 ?
@@ -470,12 +473,6 @@ var QuizView = (function () {
     });
 
     KanjiApp.setKeyHandler(null);
-  }
-
-  function _pctColor(pct) {
-    if (pct >= 80) return 'var(--success)';
-    if (pct >= 50) return 'var(--warning)';
-    return 'var(--danger)';
   }
 
   function destroy() {

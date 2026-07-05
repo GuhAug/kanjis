@@ -80,8 +80,8 @@ var KanjiApp = (function () {
       document.getElementById('app').innerHTML =
         '<div class="empty-state">' +
           '<div class="es-icon">⚠️</div>' +
-          '<div class="es-title">Dados não encontrados</div>' +
-          '<p class="text-muted" style="margin-top:8px">Execute <code>python extract_data.py</code> para gerar o arquivo de dados.</p>' +
+          '<div class="es-title">' + Lang.t('app_data_missing_title') + '</div>' +
+          '<p class="text-muted" style="margin-top:8px">' + Lang.t('app_data_missing_msg') + '</p>' +
         '</div>';
       return;
     }
@@ -137,13 +137,11 @@ FlashcardView._runWithPool = function (container, pool) {
   // Access private-ish state via the closure workaround
   // We reinitialize by re-rendering with a temporary override
   window._fcOverridePool = pool;
-  FlashcardView._forcePool = pool;
 
   var shuffled = KanjiData.shuffle(pool.slice());
   var position = 0;
   var results  = [];
   var flipped  = false;
-  var mode     = 'kanji-to-meaning';
 
   function renderCard() {
     if (position >= shuffled.length) {
@@ -180,8 +178,8 @@ FlashcardView._runWithPool = function (container, pool) {
             '<div class="flip-card-back">' +
               '<div class="fc-big-kanji" style="font-size:3rem">' + k.k + '</div>' +
               '<div class="fc-big-text" style="font-size:1.4rem">' + (k.pt || '') + '</div>' +
-              (k.kun ? '<div class="fc-reading">Kun: ' + k.kun + '</div>' : '') +
-              (k.on  ? '<div class="fc-reading">On: '  + k.on  + '</div>' : '') +
+              (k.kun ? '<div class="fc-reading">' + Lang.t('card_kun_reading') + ': ' + k.kun + '</div>' : '') +
+              (k.on  ? '<div class="fc-reading">' + Lang.t('card_on_reading')  + ': ' + k.on  + '</div>' : '') +
             '</div>' +
           '</div>' +
         '</div>' +

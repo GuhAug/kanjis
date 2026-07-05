@@ -153,13 +153,17 @@ var HomeView = (function () {
     '</div>';
   }
 
+  function _quizTypeLabel(type) {
+    return Lang.t('quiz_type_' + type) || type;
+  }
+
   function _renderQuizHistory(history) {
     return '<div class="quiz-history-list mb-24">' +
       history.map(function (q) {
         var pct = Math.round((q.score / q.total) * 100);
-        var color = pct >= 80 ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--danger)';
+        var color = KanjiData.pctColor(pct);
         return '<div class="quiz-history-item">' +
-          '<span>' + q.type + '</span>' +
+          '<span>' + _quizTypeLabel(q.type) + '</span>' +
           '<span class="qh-score" style="color:' + color + '">' + q.score + '/' + q.total + ' (' + pct + '%)</span>' +
           '<span class="qh-date">' + q.date + '</span>' +
         '</div>';

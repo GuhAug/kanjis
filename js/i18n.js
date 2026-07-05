@@ -302,6 +302,32 @@ var Lang = (function () {
       card_toast_unmastered:'Removido dos dominados.',
       card_unknown_title:   'Kanji não estudado ainda',
 
+      // App
+      app_data_missing_title: 'Dados não encontrados',
+      app_data_missing_msg: 'Execute <code>python extract_data.py</code> para gerar o arquivo de dados.',
+      data_unknown_kanji: 'Kanji não catalogado',
+
+      // Browse extra
+      browse_mastered_abbr: 'dom.',
+
+      // Transitivity extra
+      transitivity_tr_word:   'transitivo',
+      transitivity_intr_word: 'intransitivo',
+      transitivity_correct_lbl: 'Correto:',
+      transitivity_no_data: 'Dados não encontrados.',
+
+      // Particles extra
+      particles_no_data: 'Dados de partículas não encontrados.',
+
+      // Quiz type labels (used in history)
+      quiz_type_meaning:      'Significado',
+      quiz_type_kun:          'Leitura Kun',
+      quiz_type_on:           'Leitura On',
+      quiz_type_recognition:  'Reconhecimento',
+      quiz_type_reading:      'Leitura em frase',
+      quiz_type_particles:    'Partículas',
+      quiz_type_transitivity: 'Transitivo e Intransitivo',
+
       // Theory
       theory_title:    '📖 Teoria',
       theory_s_intro:    '📝 Introdução',
@@ -354,7 +380,7 @@ var Lang = (function () {
       home_toast_import_err: 'Invalid file.',
       home_toast_reset: 'Progress reset.',
       home_streak_day:  'day streak',
-      home_streak_days: 'day streak',
+      home_streak_days: 'days streak',
       home_streak_keep: 'Keep studying every day!',
 
       // CTA cards
@@ -607,6 +633,32 @@ var Lang = (function () {
       card_toast_mastered:  'Marked as mastered!',
       card_toast_unmastered:'Removed from mastered.',
       card_unknown_title:   'Kanji not yet studied',
+
+      // App
+      app_data_missing_title: 'Data not found',
+      app_data_missing_msg: 'Run <code>python extract_data.py</code> to generate the data file.',
+      data_unknown_kanji: 'Kanji not catalogued',
+
+      // Browse extra
+      browse_mastered_abbr: 'mas.',
+
+      // Transitivity extra
+      transitivity_tr_word:   'transitive',
+      transitivity_intr_word: 'intransitive',
+      transitivity_correct_lbl: 'Correct:',
+      transitivity_no_data: 'Data not found.',
+
+      // Particles extra
+      particles_no_data: 'Particle data not found.',
+
+      // Quiz type labels (used in history)
+      quiz_type_meaning:      'Meaning',
+      quiz_type_kun:          'Kun Reading',
+      quiz_type_on:           'On Reading',
+      quiz_type_recognition:  'Recognition',
+      quiz_type_reading:      'Sentence Reading',
+      quiz_type_particles:    'Particles',
+      quiz_type_transitivity: 'Transitive and Intransitive',
 
       // Theory
       theory_title:    '📖 Theory',

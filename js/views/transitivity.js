@@ -53,7 +53,7 @@ var TransitivityView = (function () {
 
     container.querySelector('#btn-start-tr').addEventListener('click', function () {
       var qs = _buildQuestions(_count);
-      if (!qs.length) { Toast.error('Dados não encontrados.'); return; }
+      if (!qs.length) { Toast.error(Lang.t('transitivity_no_data')); return; }
       _questions = qs; _index = 0; _score = 0; _answers = []; _resultRecorded = false;
       _renderSession(container);
     });
@@ -129,7 +129,7 @@ var TransitivityView = (function () {
       });
     });
 
-    _shuffle(raw);
+    KanjiData.shuffle(raw);
     var pool = count > 0 ? raw.slice(0, count) : raw;
 
     return pool.map(function (q, idx) {
@@ -148,8 +148,7 @@ var TransitivityView = (function () {
         if (!seen[c2]) { seen[c2] = true; dists.push(c2); }
       }
 
-      var options = [q.correct, q.wrong].concat(dists.slice(0, 2));
-      _shuffle(options);
+      var options = KanjiData.shuffle([q.correct, q.wrong].concat(dists.slice(0, 2)));
 
       return {
         sentence:    q.sentence,
@@ -173,8 +172,8 @@ var TransitivityView = (function () {
     var q   = _questions[_index];
     var pct = Math.round((_index / _questions.length) * 100);
 
-    var trWord   = Lang.get() === 'en' ? 'transitive'   : 'transitivo';
-    var intrWord = Lang.get() === 'en' ? 'intransitive' : 'intransitivo';
+    var trWord   = Lang.t('transitivity_tr_word');
+    var intrWord = Lang.t('transitivity_intr_word');
     var typeLabel = q.correctType === 'tr'
       ? '<span style="color:var(--accent2)">他動詞</span> (' + trWord + ')'
       : '<span style="color:var(--success)">自動詞</span> (' + intrWord + ')';
@@ -202,7 +201,7 @@ var TransitivityView = (function () {
           '<div class="qf-result" id="tr-result"></div>' +
           '<div class="gr-explanation" id="tr-exp" style="display:none">' +
             '<div class="gr-exp-row">' +
-              '<span class="gr-exp-lbl">' + (Lang.get() === 'en' ? 'Correct:' : 'Correto:') + '</span>' +
+              '<span class="gr-exp-lbl">' + Lang.t('transitivity_correct_lbl') + '</span>' +
               '<span class="gr-exp-val">' + typeLabel + '</span>' +
             '</div>' +
             '<div class="gr-exp-row" style="margin-top:6px;gap:16px;flex-wrap:wrap">' +
@@ -303,7 +302,7 @@ var TransitivityView = (function () {
     var emoji = pct === 100 ? '🏆' : pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '💪';
 
     if (!_resultRecorded) {
-      KanjiStorage.recordGrammarQuiz('Transitivo e Intransitivo', _score, total);
+      KanjiStorage.recordGrammarQuiz('transitivity', _score, total);
       _resultRecorded = true;
     }
 
@@ -329,7 +328,7 @@ var TransitivityView = (function () {
           '<div style="font-size:2.5rem">' + emoji + '</div>' +
           '<div class="qr-num">' + _score + ' / ' + total + '</div>' +
           '<div class="qr-label">' + Lang.t('transitivity_correct_answers') + '</div>' +
-          '<div class="qr-pct" style="color:' + _pctColor(pct) + '">' + pct + '%</div>' +
+          '<div class="qr-pct" style="color:' + KanjiData.pctColor(pct) + '">' + pct + '%</div>' +
         '</div>' +
         (wrongHTML
           ? '<div class="section-title">' + Lang.t('transitivity_wrong_title') + '</div>' +
@@ -346,7 +345,7 @@ var TransitivityView = (function () {
 
     container.querySelector('#btn-redo-tr').addEventListener('click', function () {
       _index = 0; _score = 0; _answers = [];
-      _shuffle(_questions);
+      KanjiData.shuffle(_questions);
       _renderSession(container);
     });
     var reviewBtn = container.querySelector('#btn-review-tr');
@@ -364,20 +363,6 @@ var TransitivityView = (function () {
       _renderConfig(container);
     });
     KanjiApp.setKeyHandler(null);
-  }
-
-  function _pctColor(pct) {
-    if (pct >= 80) return 'var(--success)';
-    if (pct >= 50) return 'var(--warning)';
-    return 'var(--danger)';
-  }
-
-  function _shuffle(arr) {
-    for (var i = arr.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
-    }
-    return arr;
   }
 
   function destroy() { KanjiApp.setKeyHandler(null); }

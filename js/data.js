@@ -162,6 +162,12 @@ var KanjiData = (function () {
 
   function total() { return _data.length; }
 
+  function pctColor(pct) {
+    if (pct >= 80) return 'var(--success)';
+    if (pct >= 50) return 'var(--warning)';
+    return 'var(--danger)';
+  }
+
   // ---- Furigana annotation ----
   var _readingMap = null;
 
@@ -212,7 +218,7 @@ var KanjiData = (function () {
           var reading = _readingMap[ch];
           result += reading
             ? '<ruby>' + ch + '<rt>' + reading + '</rt></ruby>'
-            : '<span class="kanji-unknown" title="Kanji não catalogado">' + ch + '</span>';
+            : '<span class="kanji-unknown" title="' + Lang.t('data_unknown_kanji') + '">' + ch + '</span>';
         }
       } else {
         result += ch;
@@ -239,6 +245,7 @@ var KanjiData = (function () {
     pickRandom: pickRandom,
     getDistractors: getDistractors,
     total: total,
+    pctColor: pctColor,
     annotateEx: annotateEx,
   };
 
