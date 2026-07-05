@@ -22,7 +22,8 @@ var TransitivityView = (function () {
   // ── Config ───────────────────────────────────────────────
 
   function _renderConfig(container) {
-    var total = _countTotal();
+    var total     = _countTotal();
+    var weakItems = KanjiStorage.getWeakItems('transitivity', 3);
 
     container.innerHTML =
       '<div class="view-enter">' +
@@ -36,12 +37,20 @@ var TransitivityView = (function () {
             '<select id="tr-count">' +
               '<option value="10"' + (_count === 10 ? ' selected' : '') + '>10</option>' +
               '<option value="20"' + (_count === 20 ? ' selected' : '') + '>20</option>' +
-              '<option value="0"'  + (_count === 0  ? ' selected' : '') + '>All (' + total + ')</option>' +
+              '<option value="0"'  + (_count === 0  ? ' selected' : '') + '>' + Lang.t('quiz_all') + ' (' + total + ')</option>' +
             '</select>' +
           '</div>' +
           '<div class="gr-config-actions">' +
             '<button class="btn btn-primary btn-lg" id="btn-start-tr">' + Lang.t('transitivity_start') + '</button>' +
+            (weakItems.length > 0
+              ? '<button class="btn btn-secondary" id="btn-weak-tr">' +
+                  '⚠️ ' + Lang.t('weak_btn') + ' (' + weakItems.length + ')' +
+                '</button>'
+              : '') +
           '</div>' +
+          (weakItems.length > 0
+            ? '<div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px">' + Lang.t('weak_hint') + '</div>'
+            : '') +
         '</div>' +
         _renderTheoryCard() +
         _renderPairsTable() +
@@ -53,6 +62,15 @@ var TransitivityView = (function () {
 
     container.querySelector('#btn-start-tr').addEventListener('click', function () {
       var qs = _buildQuestions(_count);
+      if (!qs.length) { Toast.error(Lang.t('transitivity_no_data')); return; }
+      _questions = qs; _index = 0; _score = 0; _answers = []; _resultRecorded = false;
+      _renderSession(container);
+    });
+
+    var weakBtn = container.querySelector('#btn-weak-tr');
+    if (weakBtn) weakBtn.addEventListener('click', function () {
+      var weakIds = weakItems.map(function (w) { return w.id; });
+      var qs = _buildQuestions(0, weakIds);
       if (!qs.length) { Toast.error(Lang.t('transitivity_no_data')); return; }
       _questions = qs; _index = 0; _score = 0; _answers = []; _resultRecorded = false;
       _renderSession(container);
@@ -113,13 +131,15 @@ var TransitivityView = (function () {
 
   // ── Build questions ──────────────────────────────────────
 
-  function _buildQuestions(count) {
+  function _buildQuestions(count, weakIds) {
     var data = window.TRANSITIVITY_DATA || [];
 
     var raw = [];
     data.forEach(function (pair) {
       pair.qs.forEach(function (q) {
+        if (weakIds && weakIds.indexOf(pair.id + ':' + q.ans) === -1) return;
         raw.push({
+          pairQKey:    pair.id + ':' + q.ans,
           sentence:    q.text,
           meaning:     Lang.get() === 'en' ? (q.en || q.pt) : q.pt,
           pair:        pair,
@@ -131,7 +151,7 @@ var TransitivityView = (function () {
     });
 
     KanjiData.shuffle(raw);
-    var pool = count > 0 ? raw.slice(0, count) : raw;
+    var pool = (!weakIds && count > 0) ? raw.slice(0, count) : raw;
 
     return pool.map(function (q, idx) {
       var seen = {};
@@ -242,6 +262,7 @@ var TransitivityView = (function () {
 
       var isCorrect = (chosenIdx === q.correctIdx);
       if (isCorrect) _score++;
+      KanjiStorage.recordItemResult('transitivity', q.pair.id + ':' + q.correctType, isCorrect);
       _answers.push({
         qIdx:        _index,
         sentence:    q.sentence,

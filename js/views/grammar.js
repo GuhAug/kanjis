@@ -65,8 +65,9 @@ var GrammarView = (function () {
   // ── Config ──────────────────────────────────────────────
 
   function _renderConfig(container) {
-    var allForms = ['pres','neg','past','past-neg','te'];
-    var allCats  = ['verb','noun','i_adj','na_adj'];
+    var allForms  = ['pres','neg','past','past-neg','te'];
+    var allCats   = ['verb','noun','i_adj','na_adj'];
+    var weakItems = KanjiStorage.getWeakItems('grammar', 3);
 
     function chips(items, selected, attr) {
       var labels = (attr === 'cat') ? _getCatShort() : _getFormLabels();
@@ -109,7 +110,15 @@ var GrammarView = (function () {
           '<div class="gr-config-actions">' +
             '<button class="btn btn-ghost" id="btn-gr-theory">' + Lang.t('grammar_theory_btn') + '</button>' +
             '<button class="btn btn-primary btn-lg" id="btn-start-gr">' + Lang.t('grammar_start') + '</button>' +
+            (weakItems.length > 0
+              ? '<button class="btn btn-secondary" id="btn-weak-gr">' +
+                  '⚠️ ' + Lang.t('weak_btn') + ' (' + weakItems.length + ')' +
+                '</button>'
+              : '') +
           '</div>' +
+          (weakItems.length > 0
+            ? '<div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px">' + Lang.t('weak_hint') + '</div>'
+            : '') +
         '</div>' +
       '</div>';
 
@@ -153,6 +162,15 @@ var GrammarView = (function () {
         Toast.error(Lang.t('grammar_no_qs'));
         return;
       }
+      _questions = qs; _index = 0; _score = 0; _answers = []; _resultRecorded = false;
+      _renderSession(container);
+    });
+
+    var weakBtn = container.querySelector('#btn-weak-gr');
+    if (weakBtn) weakBtn.addEventListener('click', function () {
+      var weakIds = weakItems.map(function (w) { return w.id; });
+      var qs = _buildQuestions(allCats, allForms, _direction, 0, weakIds);
+      if (!qs.length) { Toast.error(Lang.t('grammar_no_qs')); return; }
       _questions = qs; _index = 0; _score = 0; _answers = []; _resultRecorded = false;
       _renderSession(container);
     });
@@ -357,16 +375,20 @@ var GrammarView = (function () {
 
   // ── Build questions ──────────────────────────────────────
 
-  function _buildQuestions(cats, forms, direction, count) {
+  function _buildQuestions(cats, forms, direction, count, weakIds) {
     var data = window.GRAMMAR_DATA || [];
-    var pool = data.filter(function (item) { return cats.indexOf(item.category) !== -1; });
-    var formFull = _getFormFull();
-    var catFull  = _getCatFull();
+    var pool = weakIds
+      ? data
+      : data.filter(function (item) { return cats.indexOf(item.category) !== -1; });
+    var formFull   = _getFormFull();
+    var catFull    = _getCatFull();
+    var activeForms = weakIds ? ['pres','neg','past','past-neg','te'] : forms;
 
     var questions = [];
 
     pool.forEach(function (item) {
-      forms.forEach(function (form) {
+      activeForms.forEach(function (form) {
+        if (weakIds && weakIds.indexOf(item.id + ':' + form) === -1) return;
         if (form === 'te' && item.category !== 'verb') return;
 
         var f = item.forms[form];
@@ -433,7 +455,7 @@ var GrammarView = (function () {
     });
 
     _shuffle(questions);
-    if (count > 0) questions = questions.slice(0, count);
+    if (!weakIds && count > 0) questions = questions.slice(0, count);
     return questions;
   }
 
@@ -511,6 +533,7 @@ var GrammarView = (function () {
 
       var isCorrect = (chosenIdx === q.correct);
       if (isCorrect) _score++;
+      KanjiStorage.recordItemResult('grammar', q.itemId + ':' + q.form, isCorrect);
       _answers.push({ qIdx: _index, itemId: q.itemId, form: q.form, chosen: chosenIdx, correct: q.correct, isCorrect: isCorrect });
 
       optionsEl.querySelectorAll('.quiz-option').forEach(function (btn) {

@@ -22,7 +22,8 @@ var ParticlesView = (function () {
   // ── Config ──────────────────────────────────────────────
 
   function _renderConfig(container) {
-    var total = (window.PARTICLES_DATA || []).length;
+    var total     = (window.PARTICLES_DATA || []).length;
+    var weakItems = KanjiStorage.getWeakItems('particles', 3);
 
     container.innerHTML =
       '<div class="view-enter">' +
@@ -41,7 +42,15 @@ var ParticlesView = (function () {
           '</div>' +
           '<div class="gr-config-actions">' +
             '<button class="btn btn-primary btn-lg" id="btn-start-pt">' + Lang.t('particles_start') + '</button>' +
+            (weakItems.length > 0
+              ? '<button class="btn btn-secondary" id="btn-weak-pt">' +
+                  '⚠️ ' + Lang.t('weak_btn') + ' (' + weakItems.length + ')' +
+                '</button>'
+              : '') +
           '</div>' +
+          (weakItems.length > 0
+            ? '<div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px">' + Lang.t('weak_hint') + '</div>'
+            : '') +
         '</div>' +
         _renderParticleRef() +
       '</div>';
@@ -57,6 +66,18 @@ var ParticlesView = (function () {
         Toast.error(Lang.t('particles_no_data'));
         return;
       }
+      _index = 0; _score = 0; _answers = []; _answered = false; _resultRecorded = false;
+      _renderSession(container);
+    });
+
+    var weakBtn = container.querySelector('#btn-weak-pt');
+    if (weakBtn) weakBtn.addEventListener('click', function () {
+      var weakIds = weakItems.map(function (w) { return w.id; });
+      var data = (window.PARTICLES_DATA || []).filter(function (q) {
+        return weakIds.indexOf(q.id) !== -1;
+      });
+      if (!data.length) { Toast.error(Lang.t('particles_no_data')); return; }
+      _questions = KanjiData.shuffle(data);
       _index = 0; _score = 0; _answers = []; _answered = false; _resultRecorded = false;
       _renderSession(container);
     });
@@ -162,6 +183,7 @@ var ParticlesView = (function () {
 
       var isCorrect = (chosenIdx === correctIdx);
       if (isCorrect) _score++;
+      KanjiStorage.recordItemResult('particles', q.id, isCorrect);
       _answers.push({
         qIdx:      _index,
         id:        q.id,

@@ -329,6 +329,10 @@ var Lang = (function () {
       quiz_type_transitivity: 'Transitivo e Intransitivo',
       quiz_type_grammar:      'Formas Polida e Informal',
 
+      // Weak points
+      weak_btn:  'Pontos Fracos',
+      weak_hint: 'itens abaixo de 70% de acerto',
+
       // Theory
       theory_title:    '📖 Teoria',
       theory_s_intro:    '📝 Introdução',
@@ -661,6 +665,10 @@ var Lang = (function () {
       quiz_type_particles:    'Particles',
       quiz_type_transitivity: 'Transitive and Intransitive',
       quiz_type_grammar:      'Polite and Plain Forms',
+
+      // Weak points
+      weak_btn:  'Weak Points',
+      weak_hint: 'items below 70% accuracy',
 
       // Theory
       theory_title:    '📖 Theory',

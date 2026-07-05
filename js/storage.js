@@ -155,6 +155,38 @@ var KanjiStorage = (function () {
 
   var GRAMMAR_KEY = 'nihongo_grammar_history';
 
+  // ---- Per-item stats ----
+
+  var ITEM_KEY = 'nihongo_item_stats';
+
+  function recordItemResult(ns, id, isCorrect) {
+    try {
+      var s = JSON.parse(localStorage.getItem(ITEM_KEY) || '{}');
+      var k = ns + ':' + id;
+      if (!s[k]) s[k] = { seen: 0, correct: 0 };
+      s[k].seen++;
+      if (isCorrect) s[k].correct++;
+      localStorage.setItem(ITEM_KEY, JSON.stringify(s));
+    } catch (e) {}
+  }
+
+  function getWeakItems(ns, minSeen) {
+    minSeen = minSeen || 3;
+    try {
+      var s = JSON.parse(localStorage.getItem(ITEM_KEY) || '{}');
+      var prefix = ns + ':';
+      var weak = [];
+      Object.keys(s).forEach(function (k) {
+        if (k.indexOf(prefix) !== 0) return;
+        var st = s[k];
+        if (st.seen < minSeen) return;
+        var pct = Math.round((st.correct / st.seen) * 100);
+        if (pct < 70) weak.push({ id: k.slice(prefix.length), pct: pct });
+      });
+      return weak.sort(function (a, b) { return a.pct - b.pct; });
+    } catch (e) { return []; }
+  }
+
   function recordGrammarQuiz(type, score, total) {
     try {
       var h = JSON.parse(localStorage.getItem(GRAMMAR_KEY) || '[]');
@@ -204,6 +236,7 @@ var KanjiStorage = (function () {
   function reset() {
     localStorage.removeItem(KEY);
     localStorage.removeItem(GRAMMAR_KEY);
+    localStorage.removeItem(ITEM_KEY);
   }
 
   return {
@@ -216,6 +249,8 @@ var KanjiStorage = (function () {
     recordQuiz: recordQuiz,
     recordGrammarQuiz: recordGrammarQuiz,
     getGrammarHistory: getGrammarHistory,
+    recordItemResult: recordItemResult,
+    getWeakItems: getWeakItems,
     getProgress: getProgress,
     exportJSON: exportJSON,
     importJSON: importJSON,
