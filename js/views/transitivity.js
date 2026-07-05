@@ -87,13 +87,14 @@ var TransitivityView = (function () {
 
   function _renderPairsTable() {
     var data = window.TRANSITIVITY_DATA || [];
+    var isEN = Lang.get() === 'en';
     var rows = data.map(function (p) {
       return '<tr>' +
-        '<td style="color:var(--text-muted);font-size:0.82rem">' + p.meaning + '</td>' +
+        '<td style="color:var(--text-muted);font-size:0.82rem">' + (isEN ? (p.en || p.meaning) : p.meaning) + '</td>' +
         '<td><span style="font-family:\'Noto Sans JP\',sans-serif;font-weight:700;color:var(--accent2)">' +
-          p.tr.base + '</span> <span style="font-size:0.78rem;color:var(--text-muted)">(' + p.tr.meaning + ')</span></td>' +
+          p.tr.base + '</span> <span style="font-size:0.78rem;color:var(--text-muted)">(' + (isEN ? (p.tr.en || p.tr.meaning) : p.tr.meaning) + ')</span></td>' +
         '<td><span style="font-family:\'Noto Sans JP\',sans-serif;font-weight:700;color:var(--success)">' +
-          p.intr.base + '</span> <span style="font-size:0.78rem;color:var(--text-muted)">(' + p.intr.meaning + ')</span></td>' +
+          p.intr.base + '</span> <span style="font-size:0.78rem;color:var(--text-muted)">(' + (isEN ? (p.intr.en || p.intr.meaning) : p.intr.meaning) + ')</span></td>' +
       '</tr>';
     }).join('');
 
@@ -120,7 +121,7 @@ var TransitivityView = (function () {
       pair.qs.forEach(function (q) {
         raw.push({
           sentence:    q.text,
-          meaning:     q.pt,
+          meaning:     Lang.get() === 'en' ? (q.en || q.pt) : q.pt,
           pair:        pair,
           correctType: q.ans,
           correct:     q.ans === 'tr' ? pair.tr.past : pair.intr.past,
@@ -172,6 +173,7 @@ var TransitivityView = (function () {
     var q   = _questions[_index];
     var pct = Math.round((_index / _questions.length) * 100);
 
+    var isEN     = Lang.get() === 'en';
     var trWord   = Lang.t('transitivity_tr_word');
     var intrWord = Lang.t('transitivity_intr_word');
     var typeLabel = q.correctType === 'tr'
@@ -209,13 +211,13 @@ var TransitivityView = (function () {
                 '<span style="color:var(--text-faint);margin-right:4px">他動詞</span>' +
                 '<span style="font-family:\'Noto Sans JP\',sans-serif;color:var(--accent2)">' +
                   q.pair.tr.base + '</span>' +
-                '<span style="color:var(--text-muted);font-size:0.78rem;margin-left:4px">(' + q.pair.tr.meaning + ')</span>' +
+                '<span style="color:var(--text-muted);font-size:0.78rem;margin-left:4px">(' + (isEN ? (q.pair.tr.en || q.pair.tr.meaning) : q.pair.tr.meaning) + ')</span>' +
               '</span>' +
               '<span style="font-size:0.82rem">' +
                 '<span style="color:var(--text-faint);margin-right:4px">自動詞</span>' +
                 '<span style="font-family:\'Noto Sans JP\',sans-serif;color:var(--success)">' +
                   q.pair.intr.base + '</span>' +
-                '<span style="color:var(--text-muted);font-size:0.78rem;margin-left:4px">(' + q.pair.intr.meaning + ')</span>' +
+                '<span style="color:var(--text-muted);font-size:0.78rem;margin-left:4px">(' + (isEN ? (q.pair.intr.en || q.pair.intr.meaning) : q.pair.intr.meaning) + ')</span>' +
               '</span>' +
             '</div>' +
           '</div>' +
@@ -317,7 +319,8 @@ var TransitivityView = (function () {
         '<div class="pt-wr-sent pt-wr-right">' + corrected + '</div>' +
         '<div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px">' + a.meaning + '</div>' +
         '<div style="font-size:0.76rem;color:var(--text-faint)">' +
-          '他動詞 ' + a.pair.tr.base + ' &nbsp;·&nbsp; 自動詞 ' + a.pair.intr.base +
+          '他動詞 ' + a.pair.tr.base + ' (' + (Lang.get() === 'en' ? (a.pair.tr.en || a.pair.tr.meaning) : a.pair.tr.meaning) + ')' +
+          ' &nbsp;·&nbsp; 自動詞 ' + a.pair.intr.base + ' (' + (Lang.get() === 'en' ? (a.pair.intr.en || a.pair.intr.meaning) : a.pair.intr.meaning) + ')' +
         '</div>' +
       '</div>';
     }).join('');

@@ -36,7 +36,7 @@ var ParticlesView = (function () {
             '<select id="pt-count">' +
               '<option value="10"' + (_count === 10 ? ' selected' : '') + '>10</option>' +
               '<option value="20"' + (_count === 20 ? ' selected' : '') + '>20</option>' +
-              '<option value="0"'  + (_count === 0  ? ' selected' : '') + '>All (' + total + ')</option>' +
+              '<option value="0"'  + (_count === 0  ? ' selected' : '') + '>' + Lang.t('quiz_all') + ' (' + total + ')</option>' +
             '</select>' +
           '</div>' +
           '<div class="gr-config-actions">' +
@@ -128,7 +128,7 @@ var ParticlesView = (function () {
 
         '<div class="quiz-stimulus">' +
           '<div class="pt-sentence">' + sentenceHTML + '</div>' +
-          '<div class="gr-meaning-hint">(' + q.meaning + ')</div>' +
+          '<div class="gr-meaning-hint">(' + (Lang.get() === 'en' ? (q.en || q.meaning) : q.meaning) + ')</div>' +
         '</div>' +
 
         '<div class="quiz-options pt-options" id="pt-options">' + optsHTML + '</div>' +
@@ -138,7 +138,7 @@ var ParticlesView = (function () {
           '<div class="gr-explanation" id="pt-exp" style="display:none">' +
             '<div class="gr-exp-row">' +
               '<span class="gr-exp-lbl">' + Lang.t('particles_function_lbl') + '</span>' +
-              '<span class="gr-exp-val" style="font-size:0.9rem">' + q.role + '</span>' +
+              '<span class="gr-exp-val" style="font-size:0.9rem">' + (Lang.get() === 'en' ? (q.roleEn || q.role) : q.role) + '</span>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -166,7 +166,7 @@ var ParticlesView = (function () {
         qIdx:      _index,
         id:        q.id,
         sentence:  q.sentence,
-        meaning:   q.meaning,
+        meaning:   Lang.get() === 'en' ? (q.en || q.meaning) : q.meaning,
         correct:   q.particle,
         chosen:    allOpts[chosenIdx],
         isCorrect: isCorrect,
