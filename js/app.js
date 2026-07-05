@@ -177,7 +177,7 @@ FlashcardView._runWithPool = function (container, pool) {
             '</div>' +
             '<div class="flip-card-back">' +
               '<div class="fc-big-kanji" style="font-size:3rem">' + k.k + '</div>' +
-              '<div class="fc-big-text" style="font-size:1.4rem">' + (k.pt || '') + '</div>' +
+              '<div class="fc-big-text" style="font-size:1.4rem">' + KanjiData.meaning(k) + '</div>' +
               (k.kun ? '<div class="fc-reading">' + Lang.t('card_kun_reading') + ': ' + k.kun + '</div>' : '') +
               (k.on  ? '<div class="fc-reading">' + Lang.t('card_on_reading')  + ': ' + k.on  + '</div>' : '') +
             '</div>' +

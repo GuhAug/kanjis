@@ -39,11 +39,12 @@ var QuizView = (function () {
     var options, correctIndex;
 
     if (type === 'meaning') {
-      var distractors = KanjiData.getDistractors(k, 'pt', 3);
+      var mf = KanjiData.meaningField();
+      var distractors = KanjiData.getDistractors(k, mf, 3);
       if (distractors.length < 3) return null;
-      options = distractors.concat([k.pt]);
+      options = distractors.concat([k[mf]]);
       KanjiData.shuffle(options);
-      correctIndex = options.indexOf(k.pt);
+      correctIndex = options.indexOf(k[mf]);
       return {
         kanjiId:    k.id,
         type:       'meaning',
@@ -52,7 +53,7 @@ var QuizView = (function () {
         stimText:   null,
         options:    options,
         correct:    correctIndex,
-        explanation: { pt: k.pt, example: k.kunEx || k.onEx, exampleHtml: k.kunExHtml || k.onExHtml, translation: k.kunTr || k.onTr },
+        explanation: { pt: KanjiData.meaning(k), example: k.kunEx || k.onEx, exampleHtml: k.kunExHtml || k.onExHtml, translation: KanjiData.exTr(k, 'kun') || KanjiData.exTr(k, 'on') },
       };
     }
 
@@ -69,7 +70,7 @@ var QuizView = (function () {
         stimText:  null,
         options:   options,
         correct:   options.indexOf(k.kun),
-        explanation: { pt: k.pt, example: k.kunEx, exampleHtml: k.kunExHtml, translation: k.kunTr },
+        explanation: { pt: KanjiData.meaning(k), example: k.kunEx, exampleHtml: k.kunExHtml, translation: KanjiData.exTr(k, 'kun') },
       };
     }
 
@@ -86,7 +87,7 @@ var QuizView = (function () {
         stimText:  null,
         options:   options,
         correct:   options.indexOf(k.on),
-        explanation: { pt: k.pt, example: k.onEx, exampleHtml: k.onExHtml, translation: k.onTr },
+        explanation: { pt: KanjiData.meaning(k), example: k.onEx, exampleHtml: k.onExHtml, translation: KanjiData.exTr(k, 'on') },
       };
     }
 
@@ -100,10 +101,10 @@ var QuizView = (function () {
         type:      'recognition',
         stimLabel: Lang.t('quiz_stim_recog'),
         stimKanji: null,
-        stimText:  k.pt,
+        stimText:  KanjiData.meaning(k),
         options:   options,
         correct:   options.indexOf(k.k),
-        explanation: { pt: k.pt, example: k.kunEx || k.onEx, exampleHtml: k.kunExHtml || k.onExHtml, translation: k.kunTr || k.onTr },
+        explanation: { pt: KanjiData.meaning(k), example: k.kunEx || k.onEx, exampleHtml: k.kunExHtml || k.onExHtml, translation: KanjiData.exTr(k, 'kun') || KanjiData.exTr(k, 'on') },
       };
     }
 
@@ -167,7 +168,7 @@ var QuizView = (function () {
         stimSentence: stimHtml,
         options:     options,
         correct:     options.indexOf(correctReading),
-        explanation: { pt: k.pt, example: sentence, exampleHtml: sentenceHtml, translation: k.kunTr || k.onTr },
+        explanation: { pt: KanjiData.meaning(k), example: sentence, exampleHtml: sentenceHtml, translation: KanjiData.exTr(k, 'kun') || KanjiData.exTr(k, 'on') },
       };
     }
 

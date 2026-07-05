@@ -114,15 +114,15 @@ var CardView = (function () {
             '<span class="badge badge-muted">' + capLabel + k.chapter + ' — ' + chLabel + '</span>' +
           '</div>' +
           '<span class="kanji-main-char">' + k.k + '</span>' +
-          '<div class="kanji-meaning">' + (k.pt || '') + '</div>' +
+          '<div class="kanji-meaning">' + KanjiData.meaning(k) + '</div>' +
           '<div class="readings-row">' +
             (k.kun ? '<div class="reading-box"><div class="rb-label">' + Lang.t('card_kun_reading') + '</div><div class="rb-value">' + k.kun + '</div></div>' : '') +
             (k.on  ? '<div class="reading-box"><div class="rb-label">' + Lang.t('card_on_reading')  + '</div><div class="rb-value">' + k.on  + '</div></div>' : '') +
           '</div>' +
         '</div>' +
 
-        (k.kunEx ? _exampleSection(Lang.t('card_kun_reading'), kunExHtml, k.kunTr) : '') +
-        (k.onEx  ? _exampleSection(Lang.t('card_on_reading'),  onExHtml,  k.onTr)  : '') +
+        (k.kunEx ? _exampleSection(Lang.t('card_kun_reading'), kunExHtml, KanjiData.exTr(k, 'kun')) : '') +
+        (k.onEx  ? _exampleSection(Lang.t('card_on_reading'),  onExHtml,  KanjiData.exTr(k, 'on'))  : '') +
 
         '<div class="kanji-legend">' +
           '<span class="legend-item"><span class="legend-dot known"></span> ' + Lang.t('card_legend_known') + '</span>' +

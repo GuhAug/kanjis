@@ -304,19 +304,19 @@ var TheoryView = (function () {
 
     var examplesHtml = examples.map(function (k) {
       return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:10px">' +
-        '<div style="font-family:\'Noto Sans JP\',serif;font-size:2rem;font-weight:700;margin-bottom:8px">' + k.k + ' — ' + k.pt + '</div>' +
+        '<div style="font-family:\'Noto Sans JP\',serif;font-size:2rem;font-weight:700;margin-bottom:8px">' + k.k + ' — ' + KanjiData.meaning(k) + '</div>' +
         '<div style="display:flex;gap:20px;flex-wrap:wrap">' +
           '<div>' +
             '<div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em">' + kunLabel + '</div>' +
             '<div style="font-family:\'Noto Sans JP\',serif;font-weight:700;color:var(--level-1)">' + k.kun + '</div>' +
             '<div style="font-size:0.88rem;color:var(--text-muted)">' + k.kunEx + '</div>' +
-            (k.kunTr ? '<div style="font-size:0.78rem;color:var(--text-faint)">' + k.kunTr + '</div>' : '') +
+            (k.kunTr ? '<div style="font-size:0.78rem;color:var(--text-faint)">' + KanjiData.exTr(k, 'kun') + '</div>' : '') +
           '</div>' +
           '<div>' +
             '<div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em">' + onLabel + '</div>' +
             '<div style="font-family:\'Noto Sans JP\',serif;font-weight:700;color:var(--level-3)">' + k.on + '</div>' +
             '<div style="font-size:0.88rem;color:var(--text-muted)">' + k.onEx + '</div>' +
-            (k.onTr ? '<div style="font-size:0.78rem;color:var(--text-faint)">' + k.onTr + '</div>' : '') +
+            (k.onTr ? '<div style="font-size:0.78rem;color:var(--text-faint)">' + KanjiData.exTr(k, 'on') + '</div>' : '') +
           '</div>' +
         '</div>' +
       '</div>';

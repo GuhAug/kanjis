@@ -213,22 +213,22 @@ var FlashcardView = (function () {
       return '<div class="fc-big-kanji">' + k.k + '</div>' +
         '<div class="fc-hint">' + Lang.t('fc_flip_hint') + '</div>';
     }
-    return '<div class="fc-big-text">' + (k.pt || '') + '</div>' +
+    return '<div class="fc-big-text">' + KanjiData.meaning(k) + '</div>' +
       '<div class="fc-hint">' + Lang.t('fc_flip_hint') + '</div>';
   }
 
   function _buildBack(k) {
     if (_mode === 'kanji-to-meaning') {
       return '<div class="fc-big-kanji" style="font-size:3rem">' + k.k + '</div>' +
-        '<div class="fc-big-text" style="font-size:1.4rem">' + (k.pt || '') + '</div>' +
+        '<div class="fc-big-text" style="font-size:1.4rem">' + KanjiData.meaning(k) + '</div>' +
         (k.kun ? '<div class="fc-reading">Kun: ' + k.kun + '</div>' : '') +
         (k.on  ? '<div class="fc-reading">On: '  + k.on  + '</div>' : '') +
         (k.kunEx ? '<div class="fc-example example-jp">' + (k.kunExHtml || KanjiData.annotateEx(k.kunEx, k.k)) + '</div>' : '') +
-        (k.kunTr ? '<div class="fc-translation">' + k.kunTr + '</div>' : '');
+        (k.kunTr ? '<div class="fc-translation">' + KanjiData.exTr(k, 'kun') + '</div>' : '');
     }
     if (_mode === 'meaning-to-kanji') {
       return '<div class="fc-big-kanji">' + k.k + '</div>' +
-        '<div class="fc-big-text" style="font-size:1.2rem">' + (k.pt || '') + '</div>' +
+        '<div class="fc-big-text" style="font-size:1.2rem">' + KanjiData.meaning(k) + '</div>' +
         (k.kun ? '<div class="fc-reading">Kun: ' + k.kun + '</div>' : '') +
         (k.on  ? '<div class="fc-reading">On: '  + k.on  + '</div>' : '');
     }
@@ -237,7 +237,7 @@ var FlashcardView = (function () {
     if (k.on)  readingsHtml += '<div class="fc-reading" style="font-size:1.4rem;color:var(--text)">On: '  + k.on  + '</div>';
     return '<div class="fc-big-kanji" style="font-size:3rem">' + k.k + '</div>' +
       readingsHtml +
-      '<div style="font-size:0.9rem;color:var(--text-muted)">' + (k.pt || '') + '</div>';
+      '<div style="font-size:0.9rem;color:var(--text-muted)">' + KanjiData.meaning(k) + '</div>';
   }
 
   // ---- Results ----

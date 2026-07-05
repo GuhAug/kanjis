@@ -81,7 +81,8 @@ var KanjiData = (function () {
         (k.k && k.k.includes(query)) ||
         (k.kun && k.kun.toLowerCase().includes(q)) ||
         (k.on && k.on.toLowerCase().includes(q)) ||
-        (k.pt && k.pt.toLowerCase().includes(q))
+        (k.pt && k.pt.toLowerCase().includes(q)) ||
+        (k.en && k.en.toLowerCase().includes(q))
       );
     });
   }
@@ -168,6 +169,22 @@ var KanjiData = (function () {
     return 'var(--danger)';
   }
 
+  // Return the kanji meaning in the active language (falls back to PT)
+  function meaning(k) {
+    return (Lang.get() === 'en' ? k.en : null) || k.pt || '';
+  }
+
+  // Return the field name for meanings — used for distractor lookups
+  function meaningField() {
+    return Lang.get() === 'en' ? 'en' : 'pt';
+  }
+
+  // Return the example sentence translation in the active language
+  function exTr(k, type) {
+    if (Lang.get() !== 'en') return type === 'kun' ? (k.kunTr || '') : (k.onTr || '');
+    return type === 'kun' ? (k.kunTrEn || k.kunTr || '') : (k.onTrEn || k.onTr || '');
+  }
+
   // ---- Furigana annotation ----
   var _readingMap = null;
 
@@ -246,6 +263,9 @@ var KanjiData = (function () {
     getDistractors: getDistractors,
     total: total,
     pctColor: pctColor,
+    meaning: meaning,
+    meaningField: meaningField,
+    exTr: exTr,
     annotateEx: annotateEx,
   };
 

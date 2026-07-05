@@ -115,7 +115,7 @@ var BrowseView = (function () {
       return '<div class="kanji-cell ' + cls + '" data-kanji-id="' + k.id + '">' +
         '<div class="kc-dot"></div>' +
         '<div class="kc-char">' + k.k + '</div>' +
-        '<div class="kc-pt">' + (k.pt || '') + '</div>' +
+        '<div class="kc-pt">' + KanjiData.meaning(k) + '</div>' +
       '</div>';
     }).join('');
 
