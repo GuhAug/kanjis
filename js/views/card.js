@@ -6,38 +6,31 @@ var CardView = (function () {
 
   // ---- Furigana helpers ----
 
-  // Returns true if char is a CJK kanji character
   function _isKanji(ch) {
     var code = ch.charCodeAt(0);
     return (code >= 0x4E00 && code <= 0x9FFF) ||
            (code >= 0x3400 && code <= 0x4DBF);
   }
 
-  // Extract simplest possible reading from a reading string like "ひと、ひと（つ）"
   function _shortestReading(k) {
     var kun = k.kun ? k.kun.split('、')[0].replace(/[（(][^）)]*[）)]/g, '').replace(/[～〜~]/g, '').trim() : null;
     var on  = k.on  ? k.on.split('、')[0].replace(/[（(][^）)]*[）)]/g, '').replace(/[～〜~]/g, '').trim() : null;
-    // Convert katakana on reading to hiragana for display
     if (on) on = on.replace(/[ァ-ン]/g, function (ch) { return String.fromCharCode(ch.charCodeAt(0) - 0x60); });
-    return kun || on || null; // Prefer kun; fall back to on when no kun exists
+    return kun || on || null;
   }
 
-  // Build the set of "known" kanji characters for a given kanji card.
-  // Known = same or earlier level, same or earlier chapter.
   function _buildKnownData(currentKanji) {
-    var known     = {};   // kanji char → true
-    var readingMap = {};  // kanji char → simplest reading (for ALL kanji, for annotation)
+    var known      = {};
+    var readingMap = {};
 
     var all = KanjiData.getAll();
     for (var i = 0; i < all.length; i++) {
       var k = all[i];
       if (!k.k) continue;
 
-      // Build reading map for every kanji regardless of known status
       var reading = _shortestReading(k);
       if (reading) readingMap[k.k] = reading;
 
-      // A kanji is "known" if it belongs to a chapter ≤ current in level ≤ current
       var sameOrEarlierLevel   = k.level < currentKanji.level;
       var sameLevel            = k.level === currentKanji.level;
       var sameOrEarlierChapter = k.chapter <= currentKanji.chapter;
@@ -50,8 +43,6 @@ var CardView = (function () {
     return { known: known, readingMap: readingMap };
   }
 
-  // Annotate a Japanese sentence: wrap unknown kanji in <ruby> tags.
-  // Returns safe HTML string.
   function _annotateText(text, known, readingMap) {
     if (!text) return '';
     var result = '';
@@ -59,15 +50,13 @@ var CardView = (function () {
       var ch = text[i];
       if (_isKanji(ch)) {
         if (known[ch]) {
-          result += ch;                              // Known kanji — show as-is
+          result += ch;
         } else {
           var reading = readingMap[ch];
           if (reading) {
-            // Unknown but in our dataset → furigana
             result += '<ruby>' + ch + '<rt>' + reading + '</rt></ruby>';
           } else {
-            // Unknown and not in dataset → dotted underline tooltip
-            result += '<span class="kanji-unknown" title="Kanji não estudado ainda">' + ch + '</span>';
+            result += '<span class="kanji-unknown" title="' + Lang.t('card_unknown_title') + '">' + ch + '</span>';
           }
         }
       } else {
@@ -84,7 +73,7 @@ var CardView = (function () {
     var k  = KanjiData.getById(id);
 
     if (!k) {
-      container.innerHTML = '<div class="empty-state"><div class="es-icon">😕</div><div class="es-title">Kanji não encontrado</div></div>';
+      container.innerHTML = '<div class="empty-state"><div class="es-icon">😕</div><div class="es-title">' + Lang.t('card_not_found') + '</div></div>';
       return;
     }
 
@@ -93,29 +82,28 @@ var CardView = (function () {
     var isSeen     = KanjiStorage.isSeen(k.id);
     var isMastered = KanjiStorage.isMastered(k.id);
 
-    // Previous / Next within chapter
     var chapterKanji = KanjiData.getChapter(k.level, k.chapter);
     var idx  = chapterKanji.findIndex(function (x) { return x.id === k.id; });
     var prev = idx > 0 ? chapterKanji[idx - 1] : null;
     var next = idx < chapterKanji.length - 1 ? chapterKanji[idx + 1] : null;
 
-    // Build known-kanji data for furigana annotation
     var knownData  = _buildKnownData(k);
     var known      = knownData.known;
     var readingMap = knownData.readingMap;
 
-    // Annotate example sentences
     var kunExHtml = _annotateText(k.kunEx, known, readingMap);
     var onExHtml  = _annotateText(k.onEx,  known, readingMap);
+
+    var capLabel = Lang.t('browse_cap') + ' ';
 
     container.innerHTML =
       '<div class="view-enter kanji-card-page">' +
         '<div class="breadcrumb">' +
-          '<a data-nav="/browse">Níveis</a>' +
+          '<a data-nav="/browse">' + Lang.t('card_levels') + '</a>' +
           '<span>›</span>' +
           '<a data-nav="/browse/' + k.level + '">' + levelName + '</a>' +
           '<span>›</span>' +
-          '<a data-nav="/browse/' + k.level + '/' + k.chapter + '">Cap. ' + k.chapter + '</a>' +
+          '<a data-nav="/browse/' + k.level + '/' + k.chapter + '">' + capLabel + k.chapter + '</a>' +
           '<span>›</span>' +
           '<span>' + k.k + '</span>' +
         '</div>' +
@@ -123,40 +111,39 @@ var CardView = (function () {
         '<div class="kanji-display-box">' +
           '<div class="flex-between mb-8">' +
             '<span class="badge badge-level-' + k.level + '">' + levelName + '</span>' +
-            '<span class="badge badge-muted">Cap. ' + k.chapter + ' — ' + chLabel + '</span>' +
+            '<span class="badge badge-muted">' + capLabel + k.chapter + ' — ' + chLabel + '</span>' +
           '</div>' +
           '<span class="kanji-main-char">' + k.k + '</span>' +
           '<div class="kanji-meaning">' + (k.pt || '') + '</div>' +
           '<div class="readings-row">' +
-            (k.kun ? '<div class="reading-box"><div class="rb-label">Leitura Kun</div><div class="rb-value">' + k.kun + '</div></div>' : '') +
-            (k.on  ? '<div class="reading-box"><div class="rb-label">Leitura On</div><div class="rb-value">'  + k.on  + '</div></div>' : '') +
+            (k.kun ? '<div class="reading-box"><div class="rb-label">' + Lang.t('card_kun_reading') + '</div><div class="rb-value">' + k.kun + '</div></div>' : '') +
+            (k.on  ? '<div class="reading-box"><div class="rb-label">' + Lang.t('card_on_reading')  + '</div><div class="rb-value">' + k.on  + '</div></div>' : '') +
           '</div>' +
         '</div>' +
 
-        (k.kunEx ? _exampleSection('Leitura Kun', kunExHtml, k.kunTr) : '') +
-        (k.onEx  ? _exampleSection('Leitura On',  onExHtml,  k.onTr)  : '') +
+        (k.kunEx ? _exampleSection(Lang.t('card_kun_reading'), kunExHtml, k.kunTr) : '') +
+        (k.onEx  ? _exampleSection(Lang.t('card_on_reading'),  onExHtml,  k.onTr)  : '') +
 
         '<div class="kanji-legend">' +
-          '<span class="legend-item"><span class="legend-dot known"></span> Kanji estudado</span>' +
-          '<span class="legend-item"><span class="legend-dot unknown"></span> Kanji ainda não estudado (leitura mostrada)</span>' +
+          '<span class="legend-item"><span class="legend-dot known"></span> ' + Lang.t('card_legend_known') + '</span>' +
+          '<span class="legend-item"><span class="legend-dot unknown"></span> ' + Lang.t('card_legend_unknown') + '</span>' +
         '</div>' +
 
         '<div class="kanji-actions">' +
           '<button class="btn btn-secondary btn-seen' + (isSeen ? ' active' : '') + '" id="btn-seen">' +
-            (isSeen ? '✅ Visto' : '👁️ Marcar como visto') +
+            (isSeen ? Lang.t('card_seen') : Lang.t('card_mark_seen')) +
           '</button>' +
           '<button class="btn btn-secondary btn-mastered' + (isMastered ? ' active' : '') + '" id="btn-mastered">' +
-            (isMastered ? '⭐ Dominado' : '☆ Marcar como dominado') +
+            (isMastered ? Lang.t('card_mastered') : Lang.t('card_mark_mastered')) +
           '</button>' +
         '</div>' +
 
         '<div class="kanji-nav">' +
-          '<button class="btn btn-secondary" id="btn-prev" ' + (prev ? '' : 'disabled') + '>← Anterior</button>' +
-          '<button class="btn btn-secondary" id="btn-next" ' + (next ? '' : 'disabled') + '>Próximo →</button>' +
+          '<button class="btn btn-secondary" id="btn-prev" ' + (prev ? '' : 'disabled') + '>' + Lang.t('card_prev') + '</button>' +
+          '<button class="btn btn-secondary" id="btn-next" ' + (next ? '' : 'disabled') + '>' + Lang.t('card_next') + '</button>' +
         '</div>' +
       '</div>';
 
-    // Bind events
     var btnSeen     = container.querySelector('#btn-seen');
     var btnMastered = container.querySelector('#btn-mastered');
     var btnPrev     = container.querySelector('#btn-prev');
@@ -164,32 +151,30 @@ var CardView = (function () {
 
     btnSeen.addEventListener('click', function () {
       KanjiStorage.markSeen(k.id);
-      btnSeen.textContent = '✅ Visto';
+      btnSeen.textContent = Lang.t('card_seen');
       btnSeen.classList.add('active');
       Navbar.updateProgress();
-      Toast.success('Marcado como visto!');
+      Toast.success(Lang.t('card_toast_seen'));
     });
 
     btnMastered.addEventListener('click', function () {
       var nowMastered = KanjiStorage.toggleMastered(k.id);
-      btnMastered.textContent = nowMastered ? '⭐ Dominado' : '☆ Marcar como dominado';
+      btnMastered.textContent = nowMastered ? Lang.t('card_mastered') : Lang.t('card_mark_mastered');
       btnMastered.classList.toggle('active', nowMastered);
-      btnSeen.textContent = '✅ Visto';
+      btnSeen.textContent = Lang.t('card_seen');
       btnSeen.classList.add('active');
       Navbar.updateProgress();
-      Toast.success(nowMastered ? 'Marcado como dominado!' : 'Removido dos dominados.');
+      Toast.success(nowMastered ? Lang.t('card_toast_mastered') : Lang.t('card_toast_unmastered'));
     });
 
     if (prev) btnPrev.addEventListener('click', function () { KanjiApp.navigate('/kanji/' + prev.id); });
     if (next) btnNext.addEventListener('click', function () { KanjiApp.navigate('/kanji/' + next.id); });
 
-    // Breadcrumb nav
     container.addEventListener('click', function (e) {
       var el = e.target.closest('[data-nav]');
       if (el) KanjiApp.navigate(el.dataset.nav);
     });
 
-    // Keyboard shortcuts
     KanjiApp.setKeyHandler(function (e) {
       if (e.key === 'ArrowLeft'  && prev) KanjiApp.navigate('/kanji/' + prev.id);
       if (e.key === 'ArrowRight' && next) KanjiApp.navigate('/kanji/' + next.id);

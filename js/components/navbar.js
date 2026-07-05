@@ -6,53 +6,57 @@ var Navbar = (function () {
 
   var _drawerOpen = false;
 
-  var PATH_TITLES = {
-    '/':             'Início',
-    '/browse':       'Navegar',
-    '/kanji':        'Kanji',
-    '/flashcard':    'Flashcards',
-    '/quiz':         'Quiz',
-    '/grammar':      'Formas Polida e Informal',
-    '/particles':    'Partículas',
-    '/transitivity': 'Transitivo e Intransitivo',
-    '/theory':       'Teoria',
-  };
+  function _getSidebarItems() {
+    return [
+      { type: 'item',    path: '/',             icon: '🏠', label: Lang.t('nav_home') },
+      { type: 'section', label: Lang.t('nav_section_kanji') },
+      { type: 'item',    path: '/browse',       icon: '📚', label: Lang.t('nav_browse') },
+      { type: 'item',    path: '/flashcard',    icon: '🃏', label: Lang.t('nav_flashcard') },
+      { type: 'item',    path: '/quiz',         icon: '✏️',  label: Lang.t('nav_quiz') },
+      { type: 'section', label: Lang.t('nav_section_grammar') },
+      { type: 'item',    path: '/grammar',      icon: '🔀', label: Lang.t('nav_grammar') },
+      { type: 'item',    path: '/particles',    icon: '🧩', label: Lang.t('nav_particles') },
+      { type: 'item',    path: '/transitivity', icon: '↔️', label: Lang.t('nav_transitivity') },
+      { type: 'item',    path: '/theory',       icon: '📖', label: Lang.t('nav_theory') },
+    ];
+  }
 
-  // ---- Sidebar items (desktop) ----
-  var SIDEBAR_ITEMS = [
-    { type: 'item',    path: '/',          icon: '🏠', label: 'Início' },
-    { type: 'section', label: 'Kanji' },
-    { type: 'item',    path: '/browse',    icon: '📚', label: 'Navegar' },
-    { type: 'item',    path: '/flashcard', icon: '🃏', label: 'Flashcards' },
-    { type: 'item',    path: '/quiz',      icon: '✏️',  label: 'Quiz' },
-    { type: 'section', label: 'Gramática' },
-    { type: 'item',    path: '/grammar',    icon: '🔀', label: 'Formas Polida e Informal' },
-    { type: 'item',    path: '/particles',     icon: '🧩', label: 'Partículas' },
-    { type: 'item',    path: '/transitivity', icon: '↔️', label: 'Transitivo e Intransitivo' },
-    { type: 'item',    path: '/theory',        icon: '📖', label: 'Teoria' },
-  ];
+  function _getDrawerStructure() {
+    return [
+      { type: 'item', path: '/', icon: '🏠', label: Lang.t('nav_home') },
+      {
+        type: 'section', label: Lang.t('nav_section_kanji'),
+        items: [
+          { path: '/browse',    icon: '📚', label: Lang.t('nav_browse') },
+          { path: '/flashcard', icon: '🃏', label: Lang.t('nav_flashcard') },
+          { path: '/quiz',      icon: '✏️',  label: Lang.t('nav_quiz') },
+        ]
+      },
+      {
+        type: 'section', label: Lang.t('nav_section_grammar'),
+        items: [
+          { path: '/grammar',      icon: '🔀', label: Lang.t('nav_grammar') },
+          { path: '/particles',    icon: '🧩', label: Lang.t('nav_particles') },
+          { path: '/transitivity', icon: '↔️', label: Lang.t('nav_transitivity') },
+        ]
+      },
+      { type: 'item', path: '/theory', icon: '📖', label: Lang.t('nav_theory') },
+    ];
+  }
 
-  // ---- Drawer structure (mobile) — card sections per theme ----
-  var DRAWER_STRUCTURE = [
-    { type: 'item', path: '/', icon: '🏠', label: 'Início' },
-    {
-      type: 'section', label: 'Kanji',
-      items: [
-        { path: '/browse',    icon: '📚', label: 'Navegar' },
-        { path: '/flashcard', icon: '🃏', label: 'Flashcards' },
-        { path: '/quiz',      icon: '✏️',  label: 'Quiz' },
-      ]
-    },
-    {
-      type: 'section', label: 'Gramática',
-      items: [
-        { path: '/grammar',   icon: '🔀', label: 'Formas Polida e Informal' },
-        { path: '/particles',     icon: '🧩', label: 'Partículas' },
-        { path: '/transitivity',  icon: '↔️', label: 'Transitivo e Intransitivo' },
-      ]
-    },
-    { type: 'item', path: '/theory', icon: '📖', label: 'Teoria' },
-  ];
+  function _getPathTitles() {
+    return {
+      '/':             Lang.t('nav_home'),
+      '/browse':       Lang.t('nav_browse'),
+      '/kanji':        Lang.t('nav_browse'),
+      '/flashcard':    Lang.t('nav_flashcard'),
+      '/quiz':         Lang.t('nav_quiz'),
+      '/grammar':      Lang.t('nav_grammar'),
+      '/particles':    Lang.t('nav_particles'),
+      '/transitivity': Lang.t('nav_transitivity'),
+      '/theory':       Lang.t('nav_theory'),
+    };
+  }
 
   function _openDrawer() {
     _drawerOpen = true;
@@ -87,17 +91,26 @@ var Navbar = (function () {
         '<span class="top-bar-kanji">漢</span>' +
         '<span class="top-bar-title" id="top-bar-title">Nihongo Progressive</span>' +
       '</div>' +
-      '<button class="hamburger-btn" id="hamburger-btn" aria-label="Abrir menu">☰</button>';
+      '<div class="top-bar-right">' +
+        '<button class="lang-toggle" id="lang-toggle-top" aria-label="Switch language">' + Lang.t('lang_toggle') + '</button>' +
+        '<button class="hamburger-btn" id="hamburger-btn" aria-label="Abrir menu">☰</button>' +
+      '</div>';
 
     document.getElementById('hamburger-btn').addEventListener('click', _openDrawer);
+    document.getElementById('lang-toggle-top').addEventListener('click', _onLangToggle);
   }
 
   function renderDrawer() {
+    // Clean up existing elements
+    var existingOverlay = document.getElementById('nav-overlay');
+    var existingDrawer  = document.getElementById('nav-drawer');
+    if (existingOverlay) document.body.removeChild(existingOverlay);
+    if (existingDrawer)  document.body.removeChild(existingDrawer);
+
     var stats = KanjiStorage.getStats();
     var pct   = stats.pct;
 
-    // Build drawer body
-    var bodyHTML = DRAWER_STRUCTURE.map(function (entry) {
+    var bodyHTML = _getDrawerStructure().map(function (entry) {
       if (entry.type === 'item') {
         return '<div class="drawer-item" data-nav="' + entry.path + '">' +
           '<span class="nav-icon">' + entry.icon + '</span>' +
@@ -116,13 +129,11 @@ var Navbar = (function () {
       '</div>';
     }).join('');
 
-    // Overlay
     var overlay = document.createElement('div');
     overlay.id = 'nav-overlay';
     overlay.className = 'nav-overlay';
     overlay.addEventListener('click', _closeDrawer);
 
-    // Drawer
     var drawer = document.createElement('nav');
     drawer.id = 'nav-drawer';
     drawer.className = 'nav-drawer';
@@ -131,8 +142,8 @@ var Navbar = (function () {
         '<div class="drawer-logo">' +
           '<span class="drawer-kanji">漢</span>' +
           '<div class="drawer-logo-text">' +
-            '<span class="drawer-title">Nihongo Progressive</span>' +
-            '<span class="drawer-sub">Novo Progressivo 1–4</span>' +
+            '<span class="drawer-title">' + Lang.t('site_name') + '</span>' +
+            '<span class="drawer-sub">' + Lang.t('site_sub') + '</span>' +
           '</div>' +
         '</div>' +
         '<button class="drawer-close-btn" id="drawer-close-btn" aria-label="Fechar menu">✕</button>' +
@@ -140,7 +151,7 @@ var Navbar = (function () {
       '<div class="drawer-body">' + bodyHTML + '</div>' +
       '<div class="drawer-progress">' +
         '<div class="prog-label">' +
-          '<span>Progresso geral</span>' +
+          '<span>' + Lang.t('nav_progress') + '</span>' +
           '<span id="drawer-pct">' + pct + '%</span>' +
         '</div>' +
         '<div class="prog-bar-wrap">' +
@@ -169,7 +180,7 @@ var Navbar = (function () {
     var stats = KanjiStorage.getStats();
     var pct = stats.pct;
 
-    var items = SIDEBAR_ITEMS.map(function (item) {
+    var items = _getSidebarItems().map(function (item) {
       if (item.type === 'section') {
         return '<div class="nav-section-label">' + item.label + '</div>';
       }
@@ -183,14 +194,17 @@ var Navbar = (function () {
       '<div class="sidebar-logo">' +
         '<div class="logo-kanji">漢</div>' +
         '<div class="logo-text">' +
-          '<span class="logo-title">Nihongo Progressive</span>' +
-          '<span class="logo-sub">Novo Progressivo 1–4</span>' +
+          '<span class="logo-title">' + Lang.t('site_name') + '</span>' +
+          '<span class="logo-sub">' + Lang.t('site_sub') + '</span>' +
         '</div>' +
       '</div>' +
       '<nav class="sidebar-nav">' + items + '</nav>' +
+      '<div class="sidebar-lang">' +
+        '<button class="lang-toggle" id="lang-toggle-sidebar">' + Lang.t('lang_toggle') + '</button>' +
+      '</div>' +
       '<div class="sidebar-progress">' +
         '<div class="prog-label">' +
-          '<span>Progresso geral</span>' +
+          '<span>' + Lang.t('nav_progress') + '</span>' +
           '<span id="sidebar-pct">' + pct + '%</span>' +
         '</div>' +
         '<div class="prog-bar-wrap">' +
@@ -202,6 +216,26 @@ var Navbar = (function () {
       var item = e.target.closest('[data-nav]');
       if (item) KanjiApp.navigate(item.dataset.nav);
     });
+
+    var langBtn = el.querySelector('#lang-toggle-sidebar');
+    if (langBtn) langBtn.addEventListener('click', _onLangToggle);
+  }
+
+  function _onLangToggle() {
+    var newLang = Lang.get() === 'pt' ? 'en' : 'pt';
+    Lang.set(newLang);
+    refreshLang();
+    KanjiApp.rerender();
+  }
+
+  function refreshLang() {
+    renderSidebar();
+    renderTopBar();
+    renderDrawer();
+    // Restore active state
+    var hash = location.hash;
+    var path = hash ? hash.slice(1) : '/';
+    updateActive(path || '/');
   }
 
   function updateActive(path) {
@@ -222,11 +256,12 @@ var Navbar = (function () {
     // Top bar title (mobile)
     var titleEl = document.getElementById('top-bar-title');
     if (titleEl) {
-      var title = 'Nihongo Progressive';
+      var titles = _getPathTitles();
+      var title = Lang.t('nav_home');
       if (path !== '/') {
-        var keys = Object.keys(PATH_TITLES).filter(function (k) { return k !== '/'; });
+        var keys = Object.keys(titles).filter(function (k) { return k !== '/'; });
         for (var i = 0; i < keys.length; i++) {
-          if (path.startsWith(keys[i])) { title = PATH_TITLES[keys[i]]; break; }
+          if (path.startsWith(keys[i])) { title = titles[keys[i]]; break; }
         }
       }
       titleEl.textContent = title;
@@ -247,6 +282,6 @@ var Navbar = (function () {
     if (dpct)  dpct.textContent = stats.pct + '%';
   }
 
-  return { render: render, updateActive: updateActive, updateProgress: updateProgress };
+  return { render: render, updateActive: updateActive, updateProgress: updateProgress, refreshLang: refreshLang, renderSidebar: renderSidebar, renderTopBar: renderTopBar };
 
 })();
