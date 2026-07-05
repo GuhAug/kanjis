@@ -327,6 +327,7 @@ var Lang = (function () {
       quiz_type_reading:      'Leitura em frase',
       quiz_type_particles:    'Partículas',
       quiz_type_transitivity: 'Transitivo e Intransitivo',
+      quiz_type_grammar:      'Formas Polida e Informal',
 
       // Theory
       theory_title:    '📖 Teoria',
@@ -659,6 +660,7 @@ var Lang = (function () {
       quiz_type_reading:      'Sentence Reading',
       quiz_type_particles:    'Particles',
       quiz_type_transitivity: 'Transitive and Intransitive',
+      quiz_type_grammar:      'Polite and Plain Forms',
 
       // Theory
       theory_title:    '📖 Theory',

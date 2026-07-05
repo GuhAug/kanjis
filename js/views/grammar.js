@@ -420,7 +420,7 @@ var GrammarView = (function () {
           form:          form,
           stimulus:      stimulus,
           stimLabel:     stimLabel,
-          meaning:       item.meaning,
+          meaning:       Lang.get() === 'en' ? (item.en || item.meaning) : item.meaning,
           dict:          item.dict,
           options:       options,
           correct:       options.indexOf(correctAnswer),
@@ -558,7 +558,7 @@ var GrammarView = (function () {
     var emoji = pct === 100 ? '🏆' : pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '💪';
 
     if (!_resultRecorded) {
-      KanjiStorage.recordGrammarQuiz('Formas Polida e Informal', _score, total);
+      KanjiStorage.recordGrammarQuiz('grammar', _score, total);
       _resultRecorded = true;
     }
 
@@ -581,7 +581,7 @@ var GrammarView = (function () {
           '<div style="font-size:2.5rem">' + emoji + '</div>' +
           '<div class="qr-num">' + _score + ' / ' + total + '</div>' +
           '<div class="qr-label">' + Lang.t('grammar_correct_answers') + '</div>' +
-          '<div class="qr-pct" style="color:' + _pctColor(pct) + '">' + pct + '%</div>' +
+          '<div class="qr-pct" style="color:' + KanjiData.pctColor(pct) + '">' + pct + '%</div>' +
         '</div>' +
         (wrongItems.length > 0
           ? '<div class="section-title">' + Lang.t('grammar_wrong_title') + ' (' + wrongItems.length + ')</div>' +
@@ -616,12 +616,6 @@ var GrammarView = (function () {
       _renderConfig(container);
     });
     KanjiApp.setKeyHandler(null);
-  }
-
-  function _pctColor(pct) {
-    if (pct >= 80) return 'var(--success)';
-    if (pct >= 50) return 'var(--warning)';
-    return 'var(--danger)';
   }
 
   function destroy() { KanjiApp.setKeyHandler(null); }
